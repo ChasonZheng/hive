@@ -39,62 +39,60 @@
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-common</artifactId>
-      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-contrib</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.hive</groupId>
-          <artifactId>hive-exec</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-standalone-metastore-common</artifactId>
-      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
+      <artifactId>hive-exec</artifactId>
+      <scope>test</scope>
+      <classifier>core</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-exec</artifactId>
+      <scope>test</scope>
+      <classifier>tests</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
       <artifactId>hive-standalone-metastore-common</artifactId>
-      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-standalone-metastore-common</artifactId>
       <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-standalone-metastore-server</artifactId>
-      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-standalone-metastore-server</artifactId>
-      <version>${project.version}</version>
       <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-it-custom-serde</artifactId>
-      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-it-util</artifactId>
-      <version>${project.version}</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
-          <groupId>org.apache.hive</groupId>
-          <artifactId>hive-exec</artifactId>
+          <groupId>org.apache.calcite</groupId>
+          <artifactId>calcite-core</artifactId>
         </exclusion>
         <exclusion>
           <groupId>org.apache.hive</groupId>
@@ -105,28 +103,17 @@
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-serde</artifactId>
-      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-exec</artifactId>
-      <version>${project.version}</version>
+      <artifactId>hive-udf</artifactId>
       <scope>test</scope>
-      <classifier>core</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-exec</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-      <classifier>tests</classifier>
     </dependency>
     <!-- inter-project -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
     <!-- Declare hive-exec dependencies that were shaded in instead of
@@ -152,19 +139,16 @@
     <dependency>
       <groupId>com.sun.jersey</groupId>
       <artifactId>jersey-servlet</artifactId>
-      <version>${jersey.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-archives</artifactId>
-      <version>${hadoop.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
-      <version>${hadoop.version}</version>
       <scope>test</scope>
         <exclusions>
              <exclusion>
@@ -180,7 +164,6 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
-      <version>${hadoop.version}</version>
       <classifier>tests</classifier>
       <scope>test</scope>
          <exclusions>
@@ -197,20 +180,17 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-hdfs</artifactId>
-      <version>${hadoop.version}</version>
       <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-hdfs</artifactId>
-      <version>${hadoop.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
-      <version>${hadoop.version}</version>
       <classifier>tests</classifier>
       <scope>test</scope>
         <exclusions>
@@ -227,7 +207,6 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-mapreduce-client-hs</artifactId>
-      <version>${hadoop.version}</version>
       <scope>test</scope>
         <exclusions>
              <exclusion>
@@ -243,20 +222,17 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-mapreduce-client-core</artifactId>
-      <version>${hadoop.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-yarn-server-tests</artifactId>
-      <version>${hadoop.version}</version>
       <scope>test</scope>
       <classifier>tests</classifier>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-yarn-client</artifactId>
-      <version>${hadoop.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -268,19 +244,16 @@
     <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-tests</artifactId>
-      <version>${tez.version}</version>
-      <type>test-jar</type>
+      <classifier>tests</classifier>
     </dependency>
     <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-api</artifactId>
-      <version>${tez.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-runtime-library</artifactId>
-      <version>${tez.version}</version>
       <scope>test</scope>
         <exclusions>
              <exclusion>
@@ -296,7 +269,6 @@
     <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-mapreduce</artifactId>
-      <version>${tez.version}</version>
       <scope>test</scope>
         <exclusions>
              <exclusion>
@@ -312,7 +284,6 @@
     <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-dag</artifactId>
-      <version>${tez.version}</version>
       <scope>test</scope>
         <exclusions>
              <exclusion>
@@ -345,6 +316,19 @@
           <scope>test</scope>
         </dependency>
       </dependencies>
+    </profile>
+    <profile>
+      <id>kudu-aarch64</id>
+      <activation>
+        <os>
+          <family>Unix</family>
+          <arch>aarch64</arch>
+        </os>
+      </activation>
+      <properties>
+        <!-- Kudu tests do not currently support aarch64 check KUDU-3007. -->
+        <exclude.tests>**/*.java</exclude.tests>
+      </properties>
     </profile>
     <profile>
       <id>kudu-mac</id>
@@ -387,6 +371,30 @@
             <exclude>${exclude.tests}</exclude>
           </excludes>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>setup-metastore-scripts</id>
+            <phase>process-test-resources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <mkdir dir="${test.tmp.dir}/scripts/metastore" />
+                <copy todir="${test.tmp.dir}/scripts/metastore">
+                  <fileset dir="${basedir}/${hive.path.to.root}/metastore/scripts/"/>
+                </copy>
+                <copy todir="${test.tmp.dir}/scripts/metastore/upgrade" overwrite="true">
+                  <fileset dir="${basedir}/${hive.path.to.root}/standalone-metastore/metastore-server/src/main/sql/"/>
+                </copy>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

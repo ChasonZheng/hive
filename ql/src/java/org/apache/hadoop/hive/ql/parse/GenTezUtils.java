@@ -196,6 +196,11 @@ public class GenTezUtils {
       mapWork.setIncludedBuckets(ts.getConf().getIncludedBuckets());
     }
 
+    if (ts.getProbeDecodeContext() != null) {
+      // TODO: some operators like VectorPTFEvaluator do not allow the use of Selected take this into account here?
+      mapWork.setProbeDecodeContext(ts.getProbeDecodeContext());
+    }
+
     // add new item to the tez work
     tezWork.add(mapWork);
 
@@ -312,9 +317,8 @@ public class GenTezUtils {
 
     while(!operators.isEmpty()) {
       Operator<?> current = operators.pop();
-      seen.add(current);
 
-      if (current instanceof FileSinkOperator) {
+      if (seen.add(current) && current instanceof FileSinkOperator) {
         FileSinkOperator fileSink = (FileSinkOperator)current;
 
         // remember it for additional processing later
@@ -751,7 +755,7 @@ public class GenTezUtils {
     HashMap<ExprNodeDesc, ExprNodeDesc> childParentMapping = new HashMap<ExprNodeDesc, ExprNodeDesc>();
   }
 
-  private static class DynamicValuePredicateProc implements NodeProcessor {
+  private static class DynamicValuePredicateProc implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -777,10 +781,10 @@ public class GenTezUtils {
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack. The dispatcher
     // generates the plan from the operator tree
-    Map<Rule, NodeProcessor> exprRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> exprRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     exprRules.put(new RuleRegExp("R1", ExprNodeDynamicValueDesc.class.getName() + "%"), new DynamicValuePredicateProc());
-    Dispatcher disp = new DefaultRuleDispatcher(null, exprRules, ctx);
-    GraphWalker egw = new DefaultGraphWalker(disp);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(null, exprRules, ctx);
+    SemanticGraphWalker egw = new DefaultGraphWalker(disp);
     List<Node> startNodes = new ArrayList<Node>();
     startNodes.add(pred);
 
@@ -826,7 +830,7 @@ public class GenTezUtils {
     }
   }
 
-  public static class DynamicPartitionPrunerProc implements NodeProcessor {
+  public static class DynamicPartitionPrunerProc implements SemanticNodeProcessor {
 
     /**
      * process simply remembers all the dynamic partition pruning expressions
@@ -855,14 +859,14 @@ public class GenTezUtils {
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack. The dispatcher
     // generates the plan from the operator tree
-    Map<Rule, NodeProcessor> exprRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> exprRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     exprRules.put(new RuleRegExp("R1", ExprNodeDynamicListDesc.class.getName() + "%"),
         new DynamicPartitionPrunerProc());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
-    Dispatcher disp = new DefaultRuleDispatcher(null, exprRules, ctx);
-    GraphWalker egw = new DefaultGraphWalker(disp);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(null, exprRules, ctx);
+    SemanticGraphWalker egw = new DefaultGraphWalker(disp);
 
     List<Node> startNodes = new ArrayList<Node>();
     startNodes.add(pred);

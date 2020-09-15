@@ -221,7 +221,9 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                       Reduce Output Operator
+                        bucketingVersion: 2
                         null sort order: 
+                        numBuckets: -1
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                         tag: -1
@@ -238,13 +240,11 @@ STAGE PLANS:
                   input format: org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat
                   output format: org.apache.hadoop.hive.druid.io.DruidOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     EXTERNAL TRUE
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
                     columns __time,cstring1,cstring2,cdouble,cfloat,ctinyint,csmallint,cint,cbigint,cboolean1,cboolean2,cintstring,cfloatstring,cdoublestring
-                    columns.comments 
                     columns.types timestamp with local time zone:string:string:double:float:tinyint:smallint:int:bigint:boolean:boolean:string:string:string
                     druid.datasource default.druid_table_alltypesorc
                     druid.fieldNames vc
@@ -256,23 +256,15 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     location hdfs://### HDFS PATH ###
                     name default.druid_table_alltypesorc
-                    numFiles 0
-                    numRows 9173
-                    rawDataSize 0
-                    serialization.ddl struct druid_table_alltypesorc { timestamp with local time zone __time, string cstring1, string cstring2, double cdouble, float cfloat, byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, bool cboolean1, bool cboolean2, string cintstring, string cfloatstring, string cdoublestring}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.druid.serde.DruidSerDe
                     storage_handler org.apache.hadoop.hive.druid.DruidStorageHandler
-                    totalSize 0
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.druid.serde.DruidSerDe
                 
                     input format: org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat
                     output format: org.apache.hadoop.hive.druid.io.DruidOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       EXTERNAL TRUE
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns __time,cstring1,cstring2,cdouble,cfloat,ctinyint,csmallint,cint,cbigint,cboolean1,cboolean2,cintstring,cfloatstring,cdoublestring
@@ -288,15 +280,9 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       location hdfs://### HDFS PATH ###
                       name default.druid_table_alltypesorc
-                      numFiles 0
-                      numRows 9173
-                      rawDataSize 0
-                      serialization.ddl struct druid_table_alltypesorc { timestamp with local time zone __time, string cstring1, string cstring2, double cdouble, float cfloat, byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, bool cboolean1, bool cboolean2, string cintstring, string cfloatstring, string cdoublestring}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.druid.serde.DruidSerDe
                       storage_handler org.apache.hadoop.hive.druid.DruidStorageHandler
-                      totalSize 0
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.druid.serde.DruidSerDe
                     name: default.druid_table_alltypesorc
                   name: default.druid_table_alltypesorc
@@ -312,6 +298,7 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                 File Output Operator
+                  bucketingVersion: 2
                   compressed: false
                   GlobalTableId: 0
                   directory: hdfs://### HDFS PATH ###
@@ -322,6 +309,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       properties:
+                        bucketing_version -1
                         columns _col0
                         columns.types bigint
                         escape.delim \
@@ -378,15 +366,21 @@ STAGE PLANS:
                     druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1968-01-01T08:00:00.000Z/1970-04-01T08:00:00.001Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
                     druid.query.type scan
                   Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: vc (type: timestamp with local time zone)
-                    outputColumnNames: _col0
+                  Top N Key Operator
+                    sort order: +
+                    keys: vc (type: timestamp with local time zone)
+                    null sort order: z
                     Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: timestamp with local time zone)
-                      sort order: +
+                    top n: 10
+                    Select Operator
+                      expressions: vc (type: timestamp with local time zone)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
-                      TopN Hash Memory Usage: 0.1
+                      Reduce Output Operator
+                        key expressions: _col0 (type: timestamp with local time zone)
+                        null sort order: z
+                        sort order: +
+                        Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -475,15 +469,21 @@ STAGE PLANS:
                     druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1968-01-01T08:00:00.000Z/1970-04-01T08:00:00.001Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
                     druid.query.type scan
                   Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: vc (type: timestamp with local time zone)
-                    outputColumnNames: _col0
+                  Top N Key Operator
+                    sort order: +
+                    keys: vc (type: timestamp with local time zone)
+                    null sort order: z
                     Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: timestamp with local time zone)
-                      sort order: +
+                    top n: 10
+                    Select Operator
+                      expressions: vc (type: timestamp with local time zone)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
-                      TopN Hash Memory Usage: 0.1
+                      Reduce Output Operator
+                        key expressions: _col0 (type: timestamp with local time zone)
+                        null sort order: z
+                        sort order: +
+                        Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -573,6 +573,7 @@ STAGE PLANS:
                     Statistics: Num rows: 9173 Data size: 3625856 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: timestamp with local time zone), _col1 (type: string)
+                      null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: _col0 (type: timestamp with local time zone), _col1 (type: string)
                       Statistics: Num rows: 9173 Data size: 3625856 Basic stats: COMPLETE Column stats: NONE
@@ -645,6 +646,7 @@ STAGE PLANS:
                     Statistics: Num rows: 9173 Data size: 2091840 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: timestamp with local time zone), _col1 (type: string)
+                      null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: _col0 (type: timestamp with local time zone), _col1 (type: string)
                       Statistics: Num rows: 9173 Data size: 2091840 Basic stats: COMPLETE Column stats: NONE
@@ -717,6 +719,7 @@ STAGE PLANS:
                     Statistics: Num rows: 9173 Data size: 3625856 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: timestamp with local time zone), _col1 (type: string)
+                      null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: _col0 (type: timestamp with local time zone), _col1 (type: string)
                       Statistics: Num rows: 9173 Data size: 3625856 Basic stats: COMPLETE Column stats: NONE
@@ -789,6 +792,7 @@ STAGE PLANS:
                     Statistics: Num rows: 9173 Data size: 3625856 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: timestamp with local time zone), _col1 (type: string)
+                      null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: _col0 (type: timestamp with local time zone), _col1 (type: string)
                       Statistics: Num rows: 9173 Data size: 3625856 Basic stats: COMPLETE Column stats: NONE
@@ -859,6 +863,7 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: bigint)
@@ -923,6 +928,7 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: bigint), _col1 (type: double)
@@ -987,6 +993,7 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: bigint), _col1 (type: double), _col2 (type: int)
@@ -1053,6 +1060,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
@@ -1144,6 +1152,7 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: bigint)
@@ -1274,15 +1283,21 @@ STAGE PLANS:
                     druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
                     druid.query.type scan
                   Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: vc (type: timestamp with local time zone)
-                    outputColumnNames: _col0
+                  Top N Key Operator
+                    sort order: +
+                    keys: vc (type: timestamp with local time zone)
+                    null sort order: z
                     Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: timestamp with local time zone)
-                      sort order: +
+                    top n: 10
+                    Select Operator
+                      expressions: vc (type: timestamp with local time zone)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
-                      TopN Hash Memory Usage: 0.1
+                      Reduce Output Operator
+                        key expressions: _col0 (type: timestamp with local time zone)
+                        null sort order: z
+                        sort order: +
+                        Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -1297,6 +1312,7 @@ STAGE PLANS:
                   Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: timestamp with local time zone)
+                    null sort order: z
                     sort order: +
                     Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
@@ -1348,18 +1364,24 @@ STAGE PLANS:
                   properties:
                     druid.fieldNames vc
                     druid.fieldTypes timestamp
-                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC')","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','UTC')","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
                     druid.query.type scan
                   Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: vc (type: timestamp)
-                    outputColumnNames: _col0
+                  Top N Key Operator
+                    sort order: +
+                    keys: vc (type: timestamp)
+                    null sort order: z
                     Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: timestamp)
-                      sort order: +
+                    top n: 10
+                    Select Operator
+                      expressions: vc (type: timestamp)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
-                      TopN Hash Memory Usage: 0.1
+                      Reduce Output Operator
+                        key expressions: _col0 (type: timestamp)
+                        null sort order: z
+                        sort order: +
+                        Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
@@ -1374,6 +1396,7 @@ STAGE PLANS:
                   Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: timestamp)
+                    null sort order: z
                     sort order: +
                     Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
@@ -1532,7 +1555,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames vc
             druid.fieldTypes string
-            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"STRING"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_format((div(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC'),1000) * '1000'),'yyyy-MM-dd HH:mm:ss','UTC')","outputType":"STRING"}],"limitSpec":{"type":"default"},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"STRING"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_format((div(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','UTC'),1000) * '1000'),'yyyy-MM-dd HH:mm:ss','UTC')","outputType":"STRING"}],"limitSpec":{"type":"default"},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Select Operator
             expressions: vc (type: string)
@@ -1574,7 +1597,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames vc
             druid.fieldTypes string
-            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"STRING"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_format(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC'),'P1Y','','UTC'),'yyyy-MM-dd','UTC')","outputType":"STRING"}],"limitSpec":{"type":"default"},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"STRING"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_format(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','UTC'),'P1Y','','UTC'),'yyyy-MM-dd','UTC')","outputType":"STRING"}],"limitSpec":{"type":"default"},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Select Operator
             expressions: vc (type: string)
@@ -1629,7 +1652,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames vc
             druid.fieldTypes string
-            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"STRING"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_format(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC'),'P1M','','UTC'),'yyyy-MM-dd','UTC')","outputType":"STRING"}],"limitSpec":{"type":"default"},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"STRING"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_format(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','UTC'),'P1M','','UTC'),'yyyy-MM-dd','UTC')","outputType":"STRING"}],"limitSpec":{"type":"default"},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Select Operator
             expressions: vc (type: string)
@@ -1684,7 +1707,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames vc
             druid.fieldTypes string
-            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"STRING"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_format(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC'),'P3M','','UTC'),'yyyy-MM-dd','UTC')","outputType":"STRING"}],"limitSpec":{"type":"default"},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"STRING"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_format(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','UTC'),'P3M','','UTC'),'yyyy-MM-dd','UTC')","outputType":"STRING"}],"limitSpec":{"type":"default"},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Select Operator
             expressions: vc (type: string)
@@ -1773,7 +1796,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames vc,$f1
             druid.fieldTypes date,double
-            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"LONG"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_floor(timestamp_parse(timestamp_format(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC'),'P1M','','UTC'),'yyyy-MM-dd','UTC'),'','UTC'),'P1D','','UTC')","outputType":"LONG"}],"limitSpec":{"type":"default"},"aggregations":[{"type":"doubleSum","name":"$f1","expression":"(\"cdouble\" * \"cdouble\")"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"LONG"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_floor(timestamp_parse(timestamp_format(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','UTC'),'P1M','','UTC'),'yyyy-MM-dd','UTC'),'','UTC'),'P1D','','UTC')","outputType":"LONG"}],"limitSpec":{"type":"default"},"aggregations":[{"type":"doubleSum","name":"$f1","expression":"(\"cdouble\" * \"cdouble\")"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Select Operator
             expressions: $f1 (type: double), vc (type: date)
@@ -1822,19 +1845,25 @@ STAGE PLANS:
                   properties:
                     druid.fieldNames vc,vc0,vc1,vc2
                     druid.fieldTypes date,date,date,int
-                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_shift(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC'),'P1D','','UTC'),'P1D',CAST((\"cdouble\" / 1000), 'LONG'),'UTC')","outputType":"LONG"},{"type":"expression","name":"vc0","expression":"timestamp_shift(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC'),'P1D','','UTC'),'P1D',-( CAST((\"cdouble\" / 1000), 'LONG') ),'UTC')","outputType":"LONG"},{"type":"expression","name":"vc1","expression":"timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC'),'P1D','','UTC')","outputType":"LONG"},{"type":"expression","name":"vc2","expression":"CAST((\"cdouble\" / 1000), 'LONG')","outputType":"LONG"}],"columns":["vc","vc0","vc1","vc2"],"resultFormat":"compactedList"}
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_shift(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','UTC'),'P1D','','UTC'),'P1D',CAST((\"cdouble\" / 1000), 'LONG'),'UTC')","outputType":"LONG"},{"type":"expression","name":"vc0","expression":"timestamp_shift(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','UTC'),'P1D','','UTC'),'P1D',-( CAST((\"cdouble\" / 1000), 'LONG') ),'UTC')","outputType":"LONG"},{"type":"expression","name":"vc1","expression":"timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','UTC'),'P1D','','UTC')","outputType":"LONG"},{"type":"expression","name":"vc2","expression":"CAST((\"cdouble\" / 1000), 'LONG')","outputType":"LONG"}],"columns":["vc","vc0","vc1","vc2"],"resultFormat":"compactedList"}
                     druid.query.type scan
                   Statistics: Num rows: 9173 Data size: 1499152 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: vc (type: date), vc0 (type: date), vc1 (type: date), vc2 (type: int)
-                    outputColumnNames: _col0, _col1, _col2, _col3
+                  Top N Key Operator
+                    sort order: ++
+                    keys: vc (type: date), vc0 (type: date)
+                    null sort order: zz
                     Statistics: Num rows: 9173 Data size: 1499152 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: date), _col1 (type: date)
-                      sort order: ++
+                    top n: 3
+                    Select Operator
+                      expressions: vc (type: date), vc0 (type: date), vc1 (type: date), vc2 (type: int)
+                      outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 9173 Data size: 1499152 Basic stats: COMPLETE Column stats: NONE
-                      TopN Hash Memory Usage: 0.1
-                      value expressions: _col2 (type: date), _col3 (type: int)
+                      Reduce Output Operator
+                        key expressions: _col0 (type: date), _col1 (type: date)
+                        null sort order: zz
+                        sort order: ++
+                        Statistics: Num rows: 9173 Data size: 1499152 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col2 (type: date), _col3 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
@@ -2226,6 +2255,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
@@ -2293,15 +2323,21 @@ STAGE PLANS:
                     druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
                     druid.query.type scan
                   Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: vc (type: timestamp with local time zone)
-                    outputColumnNames: _col0
+                  Top N Key Operator
+                    sort order: +
+                    keys: vc (type: timestamp with local time zone)
+                    null sort order: z
                     Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: timestamp with local time zone)
-                      sort order: +
+                    top n: 10
+                    Select Operator
+                      expressions: vc (type: timestamp with local time zone)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
-                      TopN Hash Memory Usage: 0.1
+                      Reduce Output Operator
+                        key expressions: _col0 (type: timestamp with local time zone)
+                        null sort order: z
+                        sort order: +
+                        Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -2316,6 +2352,7 @@ STAGE PLANS:
                   Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: timestamp with local time zone)
+                    null sort order: z
                     sort order: +
                     Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
@@ -2367,18 +2404,24 @@ STAGE PLANS:
                   properties:
                     druid.fieldNames vc
                     druid.fieldTypes timestamp
-                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC')","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','UTC')","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
                     druid.query.type scan
                   Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: vc (type: timestamp)
-                    outputColumnNames: _col0
+                  Top N Key Operator
+                    sort order: +
+                    keys: vc (type: timestamp)
+                    null sort order: z
                     Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: timestamp)
-                      sort order: +
+                    top n: 10
+                    Select Operator
+                      expressions: vc (type: timestamp)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
-                      TopN Hash Memory Usage: 0.1
+                      Reduce Output Operator
+                        key expressions: _col0 (type: timestamp)
+                        null sort order: z
+                        sort order: +
+                        Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
@@ -2393,6 +2436,7 @@ STAGE PLANS:
                   Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: timestamp)
+                    null sort order: z
                     sort order: +
                     Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
@@ -2507,6 +2551,7 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: bigint)
@@ -2584,6 +2629,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: float)
@@ -2652,6 +2698,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint)

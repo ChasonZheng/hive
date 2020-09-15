@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.api.repl.ReplicationV1CompatRule;
@@ -140,6 +141,7 @@ public class WarehouseInstance implements Closeable {
     hiveConf.setBoolVar(HiveConf.ConfVars.FIRE_EVENTS_FOR_DML, true);
     hiveConf.setVar(HiveConf.ConfVars.REPLCMDIR, cmRoot);
     hiveConf.setVar(HiveConf.ConfVars.REPL_FUNCTIONS_ROOT_DIR, functionsRoot);
+    hiveConf.setBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE, false);
     hiveConf.setVar(HiveConf.ConfVars.METASTORECONNECTURLKEY,
         "jdbc:derby:memory:${test.tmp.dir}/APP;create=true");
     hiveConf.setVar(HiveConf.ConfVars.REPLDIR, this.repldDir);
@@ -227,11 +229,12 @@ public class WarehouseInstance implements Closeable {
   }
 
   public WarehouseInstance run(String command) throws Throwable {
-    CommandProcessorResponse ret = driver.run(command);
-    if (ret.getException() != null) {
-      throw ret.getException();
+    try {
+      driver.run(command);
+      return this;
+    } catch (CommandProcessorException e) {
+      throw e.getCause();
     }
-    return this;
   }
 
   public CommandProcessorResponse runCommand(String command) throws Throwable {
@@ -239,48 +242,54 @@ public class WarehouseInstance implements Closeable {
   }
 
   WarehouseInstance runFailure(String command) throws Throwable {
-    CommandProcessorResponse ret = driver.run(command);
-    if (ret.getException() == null) {
+    try {
+      driver.run(command);
       throw new RuntimeException("command execution passed for a invalid command" + command);
+    } catch (CommandProcessorException e) {
+      return this;
     }
-    return this;
   }
 
   WarehouseInstance runFailure(String command, int errorCode) throws Throwable {
-    CommandProcessorResponse ret = driver.run(command);
-    if (ret.getException() == null) {
+    try {
+      driver.run(command);
       throw new RuntimeException("command execution passed for a invalid command" + command);
+    } catch (CommandProcessorException e) {
+      if (e.getResponseCode() != errorCode) {
+        throw new RuntimeException("Command: " + command + " returned incorrect error code: " +
+            e.getResponseCode() + " instead of " + errorCode);
+      }
+      return this;
     }
-    if (ret.getResponseCode() != errorCode) {
-      throw new RuntimeException("Command: " + command + " returned incorrect error code: "
-              + ret.getResponseCode() + " instead of " + errorCode);
-    }
-    return this;
   }
 
-  Tuple dump(String dbName, String lastReplicationId, List<String> withClauseOptions)
+  Tuple dump(String dbName)
+          throws Throwable {
+    return dump(dbName, Collections.emptyList());
+  }
+
+  Tuple dump(String dbName, List<String> withClauseOptions)
       throws Throwable {
     String dumpCommand =
-        "REPL DUMP " + dbName + (lastReplicationId == null ? "" : " FROM " + lastReplicationId);
-    if (!withClauseOptions.isEmpty()) {
+        "REPL DUMP " + dbName;
+    if (withClauseOptions != null && !withClauseOptions.isEmpty()) {
       dumpCommand += " with (" + StringUtils.join(withClauseOptions, ",") + ")";
     }
-    return dump(dumpCommand);
+    return dumpWithCommand(dumpCommand);
   }
 
-  Tuple dump(String replPolicy, String oldReplPolicy, String lastReplicationId, List<String> withClauseOptions)
+  Tuple dump(String replPolicy, String oldReplPolicy, List<String> withClauseOptions)
           throws Throwable {
     String dumpCommand =
             "REPL DUMP " + replPolicy
-                    + (oldReplPolicy == null ? "" : " REPLACE " + oldReplPolicy)
-                    + (lastReplicationId == null ? "" : " FROM " + lastReplicationId);
+                    + (oldReplPolicy == null ? "" : " REPLACE " + oldReplPolicy);
     if (!withClauseOptions.isEmpty()) {
       dumpCommand += " with (" + StringUtils.join(withClauseOptions, ",") + ")";
     }
-    return dump(dumpCommand);
+    return dumpWithCommand(dumpCommand);
   }
 
-  Tuple dump(String dumpCommand) throws Throwable {
+  Tuple dumpWithCommand(String dumpCommand) throws Throwable {
     advanceDumpDir();
     run(dumpCommand);
     String dumpLocation = row0Result(0, false);
@@ -288,33 +297,37 @@ public class WarehouseInstance implements Closeable {
     return new Tuple(dumpLocation, lastDumpId);
   }
 
-  Tuple dump(String dbName, String lastReplicationId) throws Throwable {
-    return dump(dbName, lastReplicationId, Collections.emptyList());
-  }
-
-  WarehouseInstance dumpFailure(String dbName, String lastReplicationId) throws Throwable {
+  WarehouseInstance dumpFailure(String dbName) throws Throwable {
     String dumpCommand =
-            "REPL DUMP " + dbName + (lastReplicationId == null ? "" : " FROM " + lastReplicationId);
+            "REPL DUMP " + dbName;
     advanceDumpDir();
     runFailure(dumpCommand);
     return this;
   }
 
-  WarehouseInstance load(String replicatedDbName, String dumpLocation) throws Throwable {
-    run("EXPLAIN REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'");
+  WarehouseInstance load(String replicatedDbName, String primaryDbName) throws Throwable {
+    StringBuilder replCommand = new StringBuilder("REPL LOAD " + primaryDbName);
+    if (!StringUtils.isEmpty(replicatedDbName)) {
+      replCommand.append(" INTO " + replicatedDbName);
+    }
+    run("EXPLAIN " + replCommand.toString());
     printOutput();
-    run("REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'");
+    run(replCommand.toString());
     return this;
   }
 
-  WarehouseInstance loadWithoutExplain(String replicatedDbName, String dumpLocation) throws Throwable {
-    run("REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "' with ('hive.exec.parallel'='true')");
+  WarehouseInstance loadWithoutExplain(String replicatedDbName, String primaryDbName) throws Throwable {
+    StringBuilder replCommand = new StringBuilder("REPL LOAD " + primaryDbName);
+    if (!StringUtils.isEmpty(replicatedDbName)) {
+      replCommand.append(" INTO " + replicatedDbName);
+    }
+    run(replCommand.toString() + " with ('hive.exec.parallel'='true')");
     return this;
   }
 
-  WarehouseInstance load(String replicatedDbName, String dumpLocation, List<String> withClauseOptions)
+  WarehouseInstance load(String replicatedDbName, String primaryDbName, List<String> withClauseOptions)
           throws Throwable {
-    String replLoadCmd = "REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'";
+    String replLoadCmd = "REPL LOAD " + primaryDbName + " INTO " + replicatedDbName;
     if ((withClauseOptions != null) && !withClauseOptions.isEmpty()) {
       replLoadCmd += " WITH (" + StringUtils.join(withClauseOptions, ",") + ")";
     }
@@ -334,23 +347,23 @@ public class WarehouseInstance implements Closeable {
     return run(replStatusCmd);
   }
 
-  WarehouseInstance loadFailure(String replicatedDbName, String dumpLocation) throws Throwable {
-    loadFailure(replicatedDbName, dumpLocation, null);
+  WarehouseInstance loadFailure(String replicatedDbName, String primaryDbName) throws Throwable {
+    loadFailure(replicatedDbName, primaryDbName, null);
     return this;
   }
 
-  WarehouseInstance loadFailure(String replicatedDbName, String dumpLocation, List<String> withClauseOptions)
+  WarehouseInstance loadFailure(String replicatedDbName, String primaryDbName, List<String> withClauseOptions)
           throws Throwable {
-    String replLoadCmd = "REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'";
+    String replLoadCmd = "REPL LOAD " + primaryDbName + " INTO " + replicatedDbName;
     if ((withClauseOptions != null) && !withClauseOptions.isEmpty()) {
       replLoadCmd += " WITH (" + StringUtils.join(withClauseOptions, ",") + ")";
     }
     return runFailure(replLoadCmd);
   }
 
-  WarehouseInstance loadFailure(String replicatedDbName, String dumpLocation, List<String> withClauseOptions,
+  WarehouseInstance loadFailure(String replicatedDbName, String primaryDbName, List<String> withClauseOptions,
                                 int errorCode) throws Throwable {
-    String replLoadCmd = "REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'";
+    String replLoadCmd = "REPL LOAD " + primaryDbName + " INTO " + replicatedDbName;
     if ((withClauseOptions != null) && !withClauseOptions.isEmpty()) {
       replLoadCmd += " WITH (" + StringUtils.join(withClauseOptions, ",") + ")";
     }
@@ -454,6 +467,12 @@ public class WarehouseInstance implements Closeable {
   // Stats updater task and partition management task skip processing tables being replicated into.
   private void verifyReplTargetProperty(Map<String, String> props) {
     assertTrue(props.containsKey(ReplConst.REPL_TARGET_TABLE_PROPERTY));
+  }
+
+  public void verifyTargetOfReplProperty(String dbName) throws Exception {
+    Database db = getDatabase(dbName);
+    assertTrue(db.getParameters().containsKey(ReplUtils.TARGET_OF_REPLICATION));
+    assertTrue(Boolean.getBoolean(db.getParameters().get(ReplUtils.TARGET_OF_REPLICATION)));
   }
 
   public WarehouseInstance verifyReplTargetProperty(String dbName, List<String> tblNames) throws Exception {

@@ -46,13 +46,13 @@ import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.Util;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubqueryRuntimeException;
@@ -62,6 +62,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.SubqueryConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_CONVERT_ANTI_JOIN;
 
 /**
  * NOTE: this rule is replicated from Calcite's SubqueryRemoveRule
@@ -79,10 +81,10 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
  */
 public class HiveSubQueryRemoveRule extends RelOptRule {
 
-  private HiveConf conf;
+  private final HiveConf conf;
 
   public HiveSubQueryRemoveRule(HiveConf conf) {
-    super(operand(RelNode.class, null, HiveSubQueryFinder.RELNODE_PREDICATE, any()),
+    super(operandJ(RelNode.class, null, HiveSubQueryFinder.RELNODE_PREDICATE, any()),
         HiveRelFactories.HIVE_BUILDER, "SubQueryRemoveRule:Filter");
     this.conf = conf;
   }
@@ -405,7 +407,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
         builder.push(e.rel);
       }
     }
-
+    boolean isCandidateForAntiJoin = false;
     // First, the cross join
     switch (logic) {
     case TRUE_FALSE_UNKNOWN:
@@ -414,6 +416,13 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
       // null keys we do not need to generate count(*), count(c)
       if (e.getKind() == SqlKind.EXISTS) {
         logic = RelOptUtil.Logic.TRUE_FALSE;
+        if (conf.getBoolVar(HiveConf.ConfVars.HIVE_CONVERT_ANTI_JOIN)) {
+          //TODO : As of now anti join is first converted to left outer join
+          // and then converted to anti join.
+          //logic = RelOptUtil.Logic.FALSE;
+
+          isCandidateForAntiJoin = true;
+        }
         break;
       }
       builder.aggregate(builder.groupKey(), builder.count(false, "c"),
@@ -435,8 +444,13 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
     String trueLiteral = "literalTrue";
     switch (logic) {
     case TRUE:
+    case FALSE:
       if (fields.isEmpty()) {
-        builder.project(builder.alias(builder.literal(true), trueLiteral));
+        if (logic == RelOptUtil.Logic.TRUE) {
+          builder.project(builder.alias(builder.literal(true), trueLiteral));
+        } else {
+          builder.project(builder.alias(builder.literal(false), "literalFalse"));
+        }
         if (!variablesSet.isEmpty() && (e.getKind() == SqlKind.EXISTS
             || e.getKind() == SqlKind.IN)) {
           // avoid adding group by for correlated IN/EXISTS queries
@@ -459,7 +473,12 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
     default:
       fields.add(builder.alias(builder.literal(true), trueLiteral));
       builder.project(fields);
-      builder.distinct();
+      // If, not-exists is first converted to left outer join with null
+      // filter and then to anti join, then the distinct clause is added
+      // later during semi/anti join processing at genMapGroupByForSemijoin.
+      if (!isCandidateForAntiJoin || variablesSet.isEmpty()) {
+        builder.distinct();
+      }
     }
     builder.as("dt");
     final List<RexNode> conditions = new ArrayList<>();
@@ -468,8 +487,11 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
     }
     switch (logic) {
     case TRUE:
-      builder.join(JoinRelType.INNER, builder.and(conditions), variablesSet, true);
+      builder.join(JoinRelType.INNER, builder.and(conditions), variablesSet, JoinRelType.SEMI);
       return builder.literal(true);
+    case FALSE:
+      builder.join(JoinRelType.LEFT, builder.and(conditions), variablesSet, JoinRelType.ANTI);
+      return builder.literal(false);
     }
     builder.join(JoinRelType.LEFT, builder.and(conditions), variablesSet);
 
@@ -577,7 +599,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
     }
 
     @Override public RexNode visitSubQuery(RexSubQuery subQuery) {
-      return RexUtil.eq(subQuery, this.subQuery) ? replacement : subQuery;
+      return subQuery.equals(this.subQuery) ? replacement : subQuery;
     }
   }
 
@@ -597,7 +619,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
      * Returns whether a {@link Project} contains a sub-query.
      */
     public static final Predicate<RelNode> RELNODE_PREDICATE = new Predicate<RelNode>() {
-      @Override public boolean apply(RelNode relNode) {
+      @Override public boolean test(RelNode relNode) {
         if (relNode instanceof Project) {
           Project project = (Project) relNode;
           for (RexNode node : project.getProjects()) {

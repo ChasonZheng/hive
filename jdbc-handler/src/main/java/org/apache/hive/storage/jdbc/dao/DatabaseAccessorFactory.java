@@ -55,6 +55,14 @@ public class DatabaseAccessorFactory {
       accessor = new DB2DatabaseAccessor();
       break;
 
+    case HIVE:
+      accessor = new HiveDatabaseAccessor();
+      break;
+
+    case DERBY:
+      accessor = new DerbyDatabaseAccessor();
+      break;
+
     default:
       accessor = new GenericJdbcDatabaseAccessor();
       break;

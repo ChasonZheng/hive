@@ -111,7 +111,7 @@ POSTHOOK: Input: default@table_19
 POSTHOOK: Input: default@table_6
 #### A masked pattern was here ####
 418.9
-Warning: Shuffle Join MERGEJOIN[46][tables = [$hdt$_0]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[59][tables = [$hdt$_0]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: SELECT
   t1.t_id,
   null
@@ -120,6 +120,7 @@ PREHOOK: query: SELECT
   JOIN
   (SELECT 'TEST-1' id, 'TEST' r_type UNION ALL SELECT 'TEST-2' id, 'TEST' r_type) t3
   ON (t3.r_type = t1.type and t3.id in ('TEST-1', 'TEST-2'))
+  ORDER BY t1.t_id ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@table_27
@@ -132,30 +133,31 @@ POSTHOOK: query: SELECT
   JOIN
   (SELECT 'TEST-1' id, 'TEST' r_type UNION ALL SELECT 'TEST-2' id, 'TEST' r_type) t3
   ON (t3.r_type = t1.type and t3.id in ('TEST-1', 'TEST-2'))
+  ORDER BY t1.t_id ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@table_27
 #### A masked pattern was here ####
-J	NULL
-J	NULL
-I	NULL
-I	NULL
-H	NULL
-H	NULL
-G	NULL
-G	NULL
-F	NULL
-F	NULL
-E	NULL
-E	NULL
-D	NULL
-D	NULL
-C	NULL
-C	NULL
-B	NULL
-B	NULL
 A	NULL
 A	NULL
+B	NULL
+B	NULL
+C	NULL
+C	NULL
+D	NULL
+D	NULL
+E	NULL
+E	NULL
+F	NULL
+F	NULL
+G	NULL
+G	NULL
+H	NULL
+H	NULL
+I	NULL
+I	NULL
+J	NULL
+J	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT t1.decimal0801_col
 FROM table_19 t1
@@ -194,6 +196,7 @@ STAGE PLANS:
                 TableScan
                   alias: t1
                   filterExpr: (decimal0801_col is not null and int_col_1 is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:int_col_1, smallTablePos:1, keyRatio:1.0
                   Statistics: Num rows: 5 Data size: 580 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -290,6 +293,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
@@ -352,6 +356,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
+                    null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
                     Reduce Sink Vectorization:
@@ -405,6 +410,7 @@ STAGE PLANS:
                 TableScan
                   alias: t1
                   filterExpr: (int_col_1 is not null and decimal0801_col is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:int_col_1, smallTablePos:1, keyRatio:1.0
                   Statistics: Num rows: 5 Data size: 580 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -501,6 +507,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
@@ -563,6 +570,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
+                    null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
                     Reduce Sink Vectorization:
@@ -616,6 +624,7 @@ STAGE PLANS:
                 TableScan
                   alias: t1
                   filterExpr: (decimal0801_col is not null and int_col_1 is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:int_col_1, smallTablePos:1, keyRatio:1.0
                   Statistics: Num rows: 5 Data size: 580 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -712,6 +721,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
@@ -774,6 +784,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
+                    null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
                     Reduce Sink Vectorization:
@@ -789,7 +800,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[46][tables = [$hdt$_0]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[56][tables = [$hdt$_0]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT
   t1.t_id,
@@ -859,6 +870,7 @@ STAGE PLANS:
                           projectedOutputColumnNums: [0, 1]
                       Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
@@ -895,6 +907,7 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 2 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 2 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
@@ -915,6 +928,7 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 2 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 2 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
@@ -950,6 +964,7 @@ STAGE PLANS:
                       Statistics: Num rows: 5 Data size: 2760 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Reduce Sink Vectorization:

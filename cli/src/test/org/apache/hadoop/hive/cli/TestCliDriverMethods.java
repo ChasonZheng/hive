@@ -18,9 +18,9 @@
 package org.apache.hadoop.hive.cli;
 
 
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.junit.Test;
 import static org.junit.Assert.assertTrue;
@@ -89,7 +90,7 @@ public class TestCliDriverMethods {
 
   // If the command has an associated schema, make sure it gets printed to use
   @Test
-  public void testThatCliDriverPrintsHeaderForCommandsWithSchema() {
+  public void testThatCliDriverPrintsHeaderForCommandsWithSchema() throws CommandProcessorException {
     Schema mockSchema = mock(Schema.class);
     List<FieldSchema> fieldSchemas = new ArrayList<FieldSchema>();
     String fieldName = "FlightOfTheConchords";
@@ -104,7 +105,7 @@ public class TestCliDriverMethods {
 
   // If the command has no schema, make sure nothing is printed
   @Test
-  public void testThatCliDriverPrintsNoHeaderForCommandsWithNoSchema() {
+  public void testThatCliDriverPrintsNoHeaderForCommandsWithNoSchema() throws CommandProcessorException {
     Schema mockSchema = mock(Schema.class);
     when(mockSchema.getFieldSchemas()).thenReturn(null);
 
@@ -136,12 +137,14 @@ public class TestCliDriverMethods {
     // Save output as yo cannot print it while System.out and System.err are weird
     String message;
     String errors;
-    CommandProcessorResponse response;
     try {
       CliSessionState.start(ss);
       CliDriver cliDriver = new CliDriver();
       // issue a command with bad options
-      response = cliDriver.processCmd("!ls --abcdefghijklmnopqrstuvwxyz123456789");
+      cliDriver.processCmd("!ls --abcdefghijklmnopqrstuvwxyz123456789");
+      assertTrue("Comments with '--; should not have been stripped, so command should fail", false);
+    } catch (CommandProcessorException e) {
+      // this is expected to happen
     } finally {
       // restore System.out and System.err
       System.setOut(oldOut);
@@ -149,8 +152,6 @@ public class TestCliDriverMethods {
     }
     message = dataOut.toString("UTF-8");
     errors = dataErr.toString("UTF-8");
-    assertTrue("Comments with '--; should not have been stripped,"
-        + " so command should fail", response.getResponseCode() != 0);
     assertTrue("Comments with '--; should not have been stripped,"
         + " so we should have got an error in the output: '" + errors + "'.",
         errors.contains("option"));
@@ -163,10 +164,11 @@ public class TestCliDriverMethods {
    * @param mockSchema
    *          Schema to throw against test
    * @return Output that would have been sent to the user
+   * @throws CommandProcessorException
    * @throws CommandNeedRetryException
    *           won't actually be thrown
    */
-  private PrintStream headerPrintingTestDriver(Schema mockSchema) {
+  private PrintStream headerPrintingTestDriver(Schema mockSchema) throws CommandProcessorException {
     CliDriver cliDriver = new CliDriver();
 
     // We want the driver to try to print the header...
@@ -180,7 +182,6 @@ public class TestCliDriverMethods {
 
     CommandProcessorResponse cpr = mock(CommandProcessorResponse.class);
     QueryState queryState = new QueryState.Builder().withGenerateNewQueryId(true).build();
-    when(cpr.getResponseCode()).thenReturn(0);
     when(proc.run(anyString())).thenReturn(cpr);
     when(proc.getQueryState()).thenReturn(queryState);
 
@@ -204,10 +205,9 @@ public class TestCliDriverMethods {
     assertTrue(completors[0] instanceof ArgumentCompleter);
     assertTrue(completors[1] instanceof Completer);
 
-    //comletor add space after last delimeter
-   List<CharSequence>testList=new ArrayList<CharSequence>(Arrays.asList(new String[]{")"}));
+    List<CharSequence> testList = Arrays.asList(")");
     completors[1].complete("fdsdfsdf", 0, testList);
-    assertEquals(") ", testList.get(0));
+    assertEquals(")", testList.get(0));
     testList=new ArrayList<CharSequence>();
     completors[1].complete("len", 0, testList);
     assertTrue(testList.get(0).toString().endsWith("length("));
@@ -331,6 +331,7 @@ public class TestCliDriverMethods {
 
     sessionState.err = new SessionStream(data);
     sessionState.out = new SessionStream(System.out);
+    sessionState.setIsQtestLogging(true);
     try {
       CliSessionState.start(sessionState);
       CliDriver cliDriver = new CliDriver();

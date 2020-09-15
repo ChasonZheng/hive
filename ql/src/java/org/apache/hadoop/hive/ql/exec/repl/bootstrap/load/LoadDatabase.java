@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.database.alter.owner.AlterDatabaseSetOwnerDesc;
 import org.apache.hadoop.hive.ql.ddl.database.alter.poperties.AlterDatabaseSetPropertiesDesc;
@@ -60,7 +61,7 @@ public class LoadDatabase {
   public TaskTracker tasks() throws Exception {
     Database dbInMetadata = readDbMetadata();
     String dbName = dbInMetadata.getName();
-    Task<? extends Serializable> dbRootTask = null;
+    Task<?> dbRootTask = null;
     ReplLoadOpType loadDbType = getLoadDbType(dbName);
     switch (loadDbType) {
       case LOAD_NEW:
@@ -115,9 +116,9 @@ public class LoadDatabase {
     return allTables.isEmpty() && allFunctions.isEmpty();
   }
 
-  private Task<? extends Serializable> createDbTask(Database dbObj) {
+  private Task<?> createDbTask(Database dbObj) throws MetaException {
     // note that we do not set location - for repl load, we want that auto-created.
-    CreateDatabaseDesc createDbDesc = new CreateDatabaseDesc(dbObj.getName(), dbObj.getDescription(), null, false,
+    CreateDatabaseDesc createDbDesc = new CreateDatabaseDesc(dbObj.getName(), dbObj.getDescription(), null, null, false,
         updateDbProps(dbObj, context.dumpDirectory));
     // If it exists, we want this to be an error condition. Repl Load is not intended to replace a
     // db.
@@ -126,12 +127,12 @@ public class LoadDatabase {
     return TaskFactory.get(work, context.hiveConf);
   }
 
-  private Task<? extends Serializable> alterDbTask(Database dbObj) {
+  private Task<?> alterDbTask(Database dbObj) {
     return alterDbTask(dbObj.getName(), updateDbProps(dbObj, context.dumpDirectory),
             context.hiveConf);
   }
 
-  private Task<? extends Serializable> setOwnerInfoTask(Database dbObj) {
+  private Task<?> setOwnerInfoTask(Database dbObj) {
     AlterDatabaseSetOwnerDesc alterDbDesc = new AlterDatabaseSetOwnerDesc(dbObj.getName(),
         new PrincipalDesc(dbObj.getOwnerName(), dbObj.getOwnerType()), null);
     DDLWork work = new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc);
@@ -156,11 +157,14 @@ public class LoadDatabase {
     // done for this database or not. If compaction is done before first incremental then duplicate check will fail as
     // compaction may change the directory structure.
     parameters.put(ReplUtils.REPL_FIRST_INC_PENDING_FLAG, "true");
+    //This flag will be set to identify its a target of replication. Repl dump won't be allowed on a database
+    //which is a target of replication.
+    parameters.put(ReplUtils.TARGET_OF_REPLICATION, "true");
 
     return parameters;
   }
 
-  private static Task<? extends Serializable> alterDbTask(String dbName, Map<String, String> props,
+  private static Task<?> alterDbTask(String dbName, Map<String, String> props,
                                                           HiveConf hiveConf) {
     AlterDatabaseSetPropertiesDesc alterDbDesc = new AlterDatabaseSetPropertiesDesc(dbName, props, null);
     DDLWork work = new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc);

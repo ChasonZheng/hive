@@ -26,15 +26,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -47,7 +45,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
-import org.apache.hadoop.hive.ql.ddl.table.info.DescTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.info.desc.DescTableDesc;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.CheckConstraint;
 import org.apache.hadoop.hive.ql.metadata.DefaultConstraint;
@@ -112,7 +110,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
    * Show a list of tables.
    */
   @Override
-  public void showTables(DataOutputStream out, Set<String> tables)
+  public void showTables(DataOutputStream out, List<String> tables)
       throws HiveException {
     Iterator<String> iterTbls = tables.iterator();
 
@@ -139,7 +137,9 @@ class TextMetaDataFormatter implements MetaDataFormatter {
 
     try {
       TextMetaDataTable mdt = new TextMetaDataTable();
-      mdt.addRow("# Table Name", "Table Type");
+      if (!SessionState.get().isHiveServerQuery()) {
+        mdt.addRow("# Table Name", "Table Type");
+      }
       for (Table table : tables) {
         final String tableName = table.getTableName();
         final String tableType = table.getTableType().toString();
@@ -148,7 +148,6 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       // In case the query is served by HiveServer2, don't pad it with spaces,
       // as HiveServer2 output is consumed by JDBC/ODBC clients.
       out.write(mdt.renderTable(!SessionState.get().isHiveServerQuery()).getBytes("UTF-8"));
-      out.write(terminator);
     } catch (IOException e) {
       throw new HiveException(e);
     }
@@ -167,7 +166,9 @@ class TextMetaDataFormatter implements MetaDataFormatter {
 
     try {
       TextMetaDataTable mdt = new TextMetaDataTable();
-      mdt.addRow("# MV Name", "Rewriting Enabled", "Mode");
+      if (!SessionState.get().isHiveServerQuery()) {
+        mdt.addRow("# MV Name", "Rewriting Enabled", "Mode");
+      }
       for (Table mv : materializedViews) {
         final String mvName = mv.getTableName();
         final String rewriteEnabled = mv.isRewriteEnabled() ? "Yes" : "No";
@@ -176,7 +177,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
         final String refreshMode = "Manual refresh";
         final String timeWindowString = mv.getProperty(MATERIALIZED_VIEW_REWRITING_TIME_WINDOW);
         final String mode;
-        if (!org.apache.commons.lang.StringUtils.isEmpty(timeWindowString)) {
+        if (!org.apache.commons.lang3.StringUtils.isEmpty(timeWindowString)) {
           long time = HiveConf.toTime(timeWindowString,
               HiveConf.getDefaultTimeUnit(HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW),
               TimeUnit.MINUTES);
@@ -195,34 +196,33 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       // In case the query is served by HiveServer2, don't pad it with spaces,
       // as HiveServer2 output is consumed by JDBC/ODBC clients.
       out.write(mdt.renderTable(!SessionState.get().isHiveServerQuery()).getBytes("UTF-8"));
-      out.write(terminator);
     } catch (IOException e) {
       throw new HiveException(e);
     }
   }
 
   @Override
-  public void describeTable(DataOutputStream outStream,  String colPath, String tableName, Table tbl, Partition part,
+  public void describeTable(DataOutputStream outStream, String colPath, String tableName, Table tbl, Partition part,
       List<FieldSchema> cols, boolean isFormatted, boolean isExt, boolean isOutputPadded,
       List<ColumnStatisticsObj> colStats) throws HiveException {
     try {
       List<FieldSchema> partCols = tbl.isPartitioned() ? tbl.getPartCols() : null;
       String output = "";
 
-      boolean isColStatsAvailable = CollectionUtils.isNotEmpty(colStats);
+      boolean needColStats = isFormatted && colPath != null;
 
       TextMetaDataTable mdt = new TextMetaDataTable();
-      if (isFormatted && !isColStatsAvailable) {
+      if (needColStats) {
+        mdt.addRow(DescTableDesc.COLUMN_STATISTICS_HEADERS.toArray(new String[]{}));
+      } else if (isFormatted && !SessionState.get().isHiveServerQuery()) {
         output = "# ";
-      }
-      if (isFormatted) {
-        mdt.addRow(DescTableDesc.getSchema(isColStatsAvailable).split("#")[0].split(","));
+        mdt.addRow(DescTableDesc.SCHEMA.split("#")[0].split(","));
       }
       for (FieldSchema col : cols) {
-        mdt.addRow(MetaDataFormatUtils.extractColumnValues(col, isColStatsAvailable,
+        mdt.addRow(MetaDataFormatUtils.extractColumnValues(col, needColStats,
             MetaDataFormatUtils.getColumnStatisticsObject(col.getName(), col.getType(), colStats)));
       }
-      if (isColStatsAvailable) {
+      if (needColStats) {
         mdt.transpose();
       }
       output += mdt.renderTable(isOutputPadded);
@@ -231,7 +231,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
         if ((partCols != null) && !partCols.isEmpty() && showPartColsSeparately) {
           mdt = new TextMetaDataTable();
           output += MetaDataFormatUtils.LINE_DELIM + "# Partition Information" + MetaDataFormatUtils.LINE_DELIM + "# ";
-          mdt.addRow(DescTableDesc.getSchema(false).split("#")[0].split(","));
+          mdt.addRow(DescTableDesc.SCHEMA.split("#")[0].split(","));
           for (FieldSchema col : partCols) {
             mdt.addRow(MetaDataFormatUtils.extractColumnValues(col));
           }
@@ -619,7 +619,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
    */
   @Override
   public void showDatabaseDescription(DataOutputStream outStream, String database, String comment,
-      String location, String ownerName, PrincipalType ownerType, Map<String, String> params)
+      String location, String managedLocation, String ownerName, PrincipalType ownerType, Map<String, String> params)
           throws HiveException {
     try {
       outStream.write(database.getBytes("UTF-8"));
@@ -630,6 +630,10 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       outStream.write(separator);
       if (location != null) {
         outStream.write(location.getBytes("UTF-8"));
+      }
+      outStream.write(separator);
+      if (managedLocation != null) {
+        outStream.write(managedLocation.getBytes("UTF-8"));
       }
       outStream.write(separator);
       if (ownerName != null) {

@@ -90,6 +90,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkEmptyKeyOperator
@@ -99,7 +100,7 @@ STAGE PLANS:
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
@@ -219,16 +220,17 @@ STAGE PLANS:
                       Statistics: Num rows: 5 Data size: 585 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: z
                         sort order: +
                         Statistics: Num rows: 5 Data size: 585 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint), _col3 (type: bigint)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
-                notVectorizedReason: Aggregation Function expression for GROUPBY operator: DISTINCT not supported
+                notVectorizedReason: GROUPBY operator: Vector aggregation : "sum" for input type: "BYTES" and output type: "DOUBLE" and mode: PARTIAL1 not supported for evaluator GenericUDAFSumDouble
                 vectorized: false
         Reducer 2 
             Execution mode: llap
@@ -315,17 +317,18 @@ STAGE PLANS:
                       Statistics: Num rows: 5 Data size: 585 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 5 Data size: 585 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint), _col3 (type: bigint)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
-                notVectorizedReason: Aggregation Function expression for GROUPBY operator: DISTINCT not supported
+                notVectorizedReason: GROUPBY operator: Vector aggregation : "sum" for input type: "BYTES" and output type: "DOUBLE" and mode: PARTIAL1 not supported for evaluator GenericUDAFSumDouble
                 vectorized: false
         Reducer 2 
             Execution mode: llap
@@ -422,17 +425,18 @@ STAGE PLANS:
                       Statistics: Num rows: 5 Data size: 585 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 5 Data size: 585 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint), _col3 (type: bigint)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
-                notVectorizedReason: Aggregation Function expression for GROUPBY operator: DISTINCT not supported
+                notVectorizedReason: GROUPBY operator: Vector aggregation : "sum" for input type: "BYTES" and output type: "DOUBLE" and mode: PARTIAL1 not supported for evaluator GenericUDAFSumDouble
                 vectorized: false
         Reducer 2 
             Execution mode: llap
@@ -539,6 +543,7 @@ STAGE PLANS:
                       Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: double)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: double)
                         Reduce Sink Vectorization:
@@ -548,7 +553,7 @@ STAGE PLANS:
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
@@ -570,7 +575,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -607,6 +612,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkEmptyKeyOperator
@@ -729,6 +735,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: boolean)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: boolean)
                         Reduce Sink Vectorization:
@@ -738,7 +745,7 @@ STAGE PLANS:
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
@@ -760,7 +767,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -803,6 +810,7 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkEmptyKeyOperator
@@ -914,6 +922,7 @@ STAGE PLANS:
                     Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: string)
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: key (type: string)
                       Reduce Sink Vectorization:
@@ -923,7 +932,7 @@ STAGE PLANS:
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
@@ -945,7 +954,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -969,6 +978,7 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkEmptyKeyOperator

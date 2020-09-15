@@ -79,12 +79,13 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 11 
             Map Operator Tree:
                 TableScan
@@ -103,12 +104,13 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -127,12 +129,13 @@ STAGE PLANS:
                       Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -151,12 +154,13 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 9 
             Map Operator Tree:
                 TableScan
@@ -175,12 +179,13 @@ STAGE PLANS:
                       Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 10 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -199,6 +204,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
@@ -221,6 +227,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
@@ -243,6 +250,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
@@ -288,6 +296,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
@@ -310,6 +319,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
@@ -367,12 +377,13 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -391,12 +402,13 @@ STAGE PLANS:
                       Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -415,12 +427,13 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 9 
             Map Operator Tree:
                 TableScan
@@ -439,12 +452,13 @@ STAGE PLANS:
                       Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 10 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -463,6 +477,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
@@ -485,6 +500,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
@@ -530,6 +546,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
@@ -552,6 +569,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
@@ -610,12 +628,13 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 11 
             Map Operator Tree:
                 TableScan
@@ -634,12 +653,13 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -658,12 +678,13 @@ STAGE PLANS:
                       Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -682,12 +703,13 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 9 
             Map Operator Tree:
                 TableScan
@@ -706,12 +728,13 @@ STAGE PLANS:
                       Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 10 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -730,6 +753,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
@@ -752,6 +776,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
@@ -774,6 +799,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
@@ -819,6 +845,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
@@ -841,6 +868,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
@@ -899,12 +927,13 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 11 
             Map Operator Tree:
                 TableScan
@@ -923,12 +952,13 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -947,12 +977,13 @@ STAGE PLANS:
                       Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -971,12 +1002,13 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 9 
             Map Operator Tree:
                 TableScan
@@ -995,12 +1027,13 @@ STAGE PLANS:
                       Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 10 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -1019,6 +1052,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1041,6 +1075,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1063,6 +1098,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1108,6 +1144,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1130,6 +1167,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1188,12 +1226,13 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 11 
             Map Operator Tree:
                 TableScan
@@ -1212,12 +1251,13 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -1236,12 +1276,13 @@ STAGE PLANS:
                       Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -1260,12 +1301,13 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 9 
             Map Operator Tree:
                 TableScan
@@ -1284,12 +1326,13 @@ STAGE PLANS:
                       Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 10 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -1308,6 +1351,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1330,6 +1374,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1352,6 +1397,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1397,6 +1443,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1419,6 +1466,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1475,12 +1523,13 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -1499,12 +1548,13 @@ STAGE PLANS:
                       Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -1523,12 +1573,13 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -1547,6 +1598,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1592,6 +1644,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1614,6 +1667,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1670,12 +1724,13 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -1694,12 +1749,13 @@ STAGE PLANS:
                       Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -1718,12 +1774,13 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -1742,6 +1799,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 2 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1794,6 +1852,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 2 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1816,6 +1875,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 2 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1873,18 +1933,20 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 8 
             Map Operator Tree:
                 TableScan
@@ -1903,12 +1965,13 @@ STAGE PLANS:
                       Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -1927,6 +1990,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1979,6 +2043,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2014,6 +2079,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int), _col1 (type: int)
+                          null sort order: zz
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                           Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2036,6 +2102,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                     Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE

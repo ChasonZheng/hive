@@ -157,6 +157,8 @@ public class FetchOperator implements Serializable {
     LOG.debug("FetchOperator set writeIdStr: " + writeIdStr);
   }
   private void initialize() throws HiveException {
+    ensureCorrectSchemaEvolutionConfigs(job);
+
     if (isStatReader) {
       outputOI = work.getStatRowOI();
       return;
@@ -313,6 +315,19 @@ public class FetchOperator implements Serializable {
         buff.append(StringEscapeUtils.escapeJava(path.toString()));
       }
       conf.set(FETCH_OPERATOR_DIRECTORY_LIST, buff.toString());
+    }
+  }
+
+  private void ensureCorrectSchemaEvolutionConfigs(JobConf conf) {
+    boolean isSchemaEvolution = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_SCHEMA_EVOLUTION);
+    boolean isForcePositionalEvolution =
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_FORCE_POSITIONAL_SCHEMA_EVOLUTION);
+
+    if (!isSchemaEvolution && isForcePositionalEvolution) {
+      LOG.warn(
+          "invalid schema evolution ({}) and force positional evolution ({}) pair, falling back to disabling both",
+          isSchemaEvolution, isForcePositionalEvolution);
+      HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_FORCE_POSITIONAL_SCHEMA_EVOLUTION, false);
     }
   }
 
@@ -478,7 +493,7 @@ public class FetchOperator implements Serializable {
 
   }
   private ValidWriteIdList extractValidWriteIdList() {
-    if (currDesc.getTableName() == null || !org.apache.commons.lang.StringUtils.isBlank(currDesc.getTableName())) {
+    if (currDesc.getTableName() == null || !org.apache.commons.lang3.StringUtils.isBlank(currDesc.getTableName())) {
       String txnString = job.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
       LOG.debug("FetchOperator get writeIdStr: " + txnString);
       return txnString == null ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);

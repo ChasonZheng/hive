@@ -18,19 +18,8 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import java.util.List;
-import org.apache.calcite.adapter.druid.DruidQuery;
-import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcAggregate;
-import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcFilter;
-import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcJoin;
-import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcProject;
-import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcSort;
-import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcUnion;
-import org.apache.calcite.plan.hep.HepRelVertex;
-import org.apache.calcite.plan.volcano.AbstractConverter;
-import org.apache.calcite.plan.volcano.RelSubset;
-import org.apache.calcite.rel.AbstractRelNode;
+
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.convert.ConverterImpl;
 import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
 import org.apache.calcite.rel.metadata.JaninoRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
@@ -38,24 +27,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveDefaultCostModel;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveOnTezCostModel;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveRelMdCost;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExcept;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIntersect;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.JdbcHiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdColumnUniqueness;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdCollation;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdCumulativeCost;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdDistinctRowCount;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdDistribution;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdMemory;
@@ -80,6 +54,7 @@ public class HiveDefaultRelMetadataProvider {
           ChainedRelMetadataProvider.of(
               ImmutableList.of(
                   HiveRelMdDistinctRowCount.SOURCE,
+                  HiveRelMdCumulativeCost.SOURCE,
                   new HiveRelMdCost(HiveDefaultCostModel.getCostModel()).getMetadataProvider(),
                   HiveRelMdSelectivity.SOURCE,
                   HiveRelMdRuntimeRowCount.SOURCE,
@@ -92,53 +67,14 @@ public class HiveDefaultRelMetadataProvider {
                   HiveRelMdPredicates.SOURCE,
                   JaninoRelMetadataProvider.DEFAULT)));
 
-  /**
-   * This is the list of operators that are specifically used in Hive and
-   * should be loaded by the metadata providers.
-   */
-  private static final List<Class<? extends RelNode>> HIVE_REL_NODE_CLASSES =
-      ImmutableList.of(
-          RelNode.class,
-          AbstractRelNode.class,
-          RelSubset.class,
-          HepRelVertex.class,
-          ConverterImpl.class,
-          AbstractConverter.class,
-
-          HiveTableScan.class,
-          HiveAggregate.class,
-          HiveExcept.class,
-          HiveFilter.class,
-          HiveIntersect.class,
-          HiveJoin.class,
-          HiveMultiJoin.class,
-          HiveProject.class,
-          HiveRelNode.class,
-          HiveSemiJoin.class,
-          HiveSortExchange.class,
-          HiveSortLimit.class,
-          HiveTableFunctionScan.class,
-          HiveUnion.class,
-
-          DruidQuery.class,
-
-          HiveJdbcConverter.class,
-          JdbcHiveTableScan.class,
-          JdbcAggregate.class,
-          JdbcFilter.class,
-          JdbcJoin.class,
-          JdbcProject.class,
-          JdbcSort.class,
-          JdbcUnion.class);
-
   private final RelMetadataProvider metadataProvider;
 
 
-  public HiveDefaultRelMetadataProvider(HiveConf hiveConf) {
-    this.metadataProvider = init(hiveConf);
+  public HiveDefaultRelMetadataProvider(HiveConf hiveConf, List<Class<? extends RelNode>> nodeClasses) {
+    this.metadataProvider = init(hiveConf, nodeClasses);
   }
 
-  private RelMetadataProvider init(HiveConf hiveConf) {
+  private RelMetadataProvider init(HiveConf hiveConf, List<Class<? extends RelNode>> nodeClasses) {
     // Create cost metadata provider
     if (HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")
         && HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_CBO_EXTENDED_COST_MODEL)) {
@@ -151,6 +87,7 @@ public class HiveDefaultRelMetadataProvider {
           ChainedRelMetadataProvider.of(
               ImmutableList.of(
                   HiveRelMdDistinctRowCount.SOURCE,
+                  HiveRelMdCumulativeCost.SOURCE,
                   new HiveRelMdCost(HiveOnTezCostModel.getCostModel(hiveConf)).getMetadataProvider(),
                   HiveRelMdSelectivity.SOURCE,
                   HiveRelMdRowCount.SOURCE,
@@ -164,7 +101,10 @@ public class HiveDefaultRelMetadataProvider {
                   HiveRelMdPredicates.SOURCE,
                   JaninoRelMetadataProvider.DEFAULT)));
 
-      metadataProvider.register(HIVE_REL_NODE_CLASSES);
+      if (nodeClasses != null) {
+        // If classes were passed, pre-register them
+        metadataProvider.register(nodeClasses);
+      }
 
       return metadataProvider;
     }
@@ -181,11 +121,8 @@ public class HiveDefaultRelMetadataProvider {
    * additional Hive classes (compared to Calcite core classes) that may
    * be visited during the planning phase.
    */
-  public static void initializeMetadataProviderClass() {
-    // This will register the classes in the default Janino implementation
-    JaninoRelMetadataProvider.DEFAULT.register(
-        HiveDefaultRelMetadataProvider.HIVE_REL_NODE_CLASSES);
+  public static void initializeMetadataProviderClass(List<Class<? extends RelNode>> nodeClasses) {
     // This will register the classes in the default Hive implementation
-    DEFAULT.register(HiveDefaultRelMetadataProvider.HIVE_REL_NODE_CLASSES);
+    DEFAULT.register(nodeClasses);
   }
 }

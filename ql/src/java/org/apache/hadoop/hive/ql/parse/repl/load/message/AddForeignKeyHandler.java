@@ -22,18 +22,19 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.messaging.AddForeignKeyMessage;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
-import org.apache.hadoop.hive.ql.ddl.table.constaint.AlterTableAddConstraintDesc;
-import org.apache.hadoop.hive.ql.ddl.table.constaint.Constraints;
+import org.apache.hadoop.hive.ql.ddl.table.constraint.Constraints;
+import org.apache.hadoop.hive.ql.ddl.table.constraint.add.AlterTableAddConstraintDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 public class AddForeignKeyHandler extends AbstractMessageHandler {
   @Override
-  public List<Task<? extends Serializable>> handle(Context context)
+  public List<Task<?>> handle(Context context)
       throws SemanticException {
     AddForeignKeyMessage msg = deserializer.getAddForeignKeyMessage(context.dmd.getPayload());
 
@@ -48,13 +49,14 @@ public class AddForeignKeyHandler extends AbstractMessageHandler {
       }
     }
 
-    List<Task<? extends Serializable>> tasks = new ArrayList<Task<? extends Serializable>>();
+    List<Task<?>> tasks = new ArrayList<Task<?>>();
     if (fks.isEmpty()) {
       return tasks;
     }
 
-    String actualDbName = context.isDbNameEmpty() ? fks.get(0).getFktable_db() : context.dbName;
-    String actualTblName = fks.get(0).getFktable_name();
+    final String actualDbName = context.isDbNameEmpty() ? fks.get(0).getFktable_db() : context.dbName;
+    final String actualTblName = fks.get(0).getFktable_name();
+    final TableName tName = TableName.fromString(actualTblName, null, actualDbName);
 
     for (SQLForeignKey fk : fks) {
       // If parent table is in the same database, change it to the actual db on destination
@@ -67,7 +69,7 @@ public class AddForeignKeyHandler extends AbstractMessageHandler {
     }
 
     Constraints constraints = new Constraints(null, fks, null, null, null, null);
-    AlterTableAddConstraintDesc addConstraintsDesc = new AlterTableAddConstraintDesc(actualDbName + "." + actualTblName,
+    AlterTableAddConstraintDesc addConstraintsDesc = new AlterTableAddConstraintDesc(tName,
         context.eventOnlyReplicationSpec(), constraints);
     Task<DDLWork> addConstraintsTask = TaskFactory.get(
             new DDLWork(readEntitySet, writeEntitySet, addConstraintsDesc), context.hiveConf);

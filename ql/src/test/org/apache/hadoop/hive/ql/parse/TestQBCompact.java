@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
-import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableCompactDesc;
+import org.apache.hadoop.hive.ql.ddl.table.storage.compact.AlterTableCompactDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
@@ -77,7 +77,7 @@ public class TestQBCompact {
 
   private void parseAndAnalyze(String query) throws Exception {
     ParseDriver hd = new ParseDriver();
-    ASTNode head = (ASTNode)hd.parse(query).getChild(0);
+    ASTNode head = (ASTNode)hd.parse(query).getTree().getChild(0);
     BaseSemanticAnalyzer a = SemanticAnalyzerFactory.get(queryState, head);
     a.analyze(head, new Context(conf));
     List<Task<?>> roots = a.getRootTasks();
@@ -86,7 +86,7 @@ public class TestQBCompact {
 
   private AlterTableCompactDesc parseAndAnalyzeAlterTable(String query) throws Exception {
     ParseDriver hd = new ParseDriver();
-    ASTNode head = (ASTNode)hd.parse(query).getChild(0);
+    ASTNode head = (ASTNode)hd.parse(query).getTree().getChild(0);
     BaseSemanticAnalyzer a = SemanticAnalyzerFactory.get(queryState, head);
     a.analyze(head, new Context(conf));
     List<Task<?>> roots = a.getRootTasks();

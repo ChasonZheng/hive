@@ -16,6 +16,7 @@ package org.apache.hadoop.hive.ql.io.parquet.timestamp;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
@@ -40,7 +41,10 @@ public class NanoTimeUtils {
   private static Calendar getGMTCalendar() {
     //Calendar.getInstance calculates the current-time needlessly, so cache an instance.
     if (parquetGMTCalendar.get() == null) {
-      parquetGMTCalendar.set(Calendar.getInstance(TimeZone.getTimeZone("GMT")));
+      GregorianCalendar calendar = new GregorianCalendar();
+      calendar.setTimeZone(TimeZone.getTimeZone("GMT"));
+      calendar.setGregorianChange(new Date(Long.MIN_VALUE));
+      parquetGMTCalendar.set(calendar);
     }
     parquetGMTCalendar.get().clear();
     return parquetGMTCalendar.get();
@@ -91,7 +95,7 @@ public class NanoTimeUtils {
   }
 
   public static Timestamp getTimestamp(NanoTime nt, boolean skipConversion) {
-    return getTimestamp(nt, skipConversion, null);
+    return getTimestamp(nt, skipConversion, null, false);
   }
 
   /**
@@ -106,10 +110,13 @@ public class NanoTimeUtils {
    * For skipConversion to be true it must be set in conf AND the parquet file must NOT be written
    * by parquet's java library (parquet-mr). This is enforced in ParquetRecordReaderBase#getSplit.
    */
-  public static Timestamp getTimestamp(NanoTime nt, boolean skipConversion, ZoneId timeZoneId) {
+  public static Timestamp getTimestamp(NanoTime nt, boolean skipConversion, ZoneId timeZoneId,
+      boolean legacyConversionEnabled) {
+    boolean legacyConversion = false;
     if (skipConversion) {
       timeZoneId = ZoneOffset.UTC;
     } else if (timeZoneId == null) {
+      legacyConversion = legacyConversionEnabled;
       timeZoneId = TimeZone.getDefault().toZoneId();
     }
 
@@ -142,7 +149,7 @@ public class NanoTimeUtils {
     calendar.set(Calendar.SECOND, seconds);
 
     Timestamp ts = Timestamp.ofEpochMilli(calendar.getTimeInMillis(), (int) nanos);
-    ts = TimestampTZUtil.convertTimestampToZone(ts, ZoneOffset.UTC, timeZoneId);
+    ts = TimestampTZUtil.convertTimestampToZone(ts, ZoneOffset.UTC, timeZoneId, legacyConversion);
     return ts;
   }
 }

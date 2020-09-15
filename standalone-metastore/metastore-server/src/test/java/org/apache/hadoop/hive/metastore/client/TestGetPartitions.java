@@ -27,17 +27,13 @@ import java.util.Set;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
-import org.apache.hadoop.hive.metastore.api.Catalog;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
 
@@ -262,7 +258,26 @@ public class TestGetPartitions extends MetaStoreClientTest {
     client.getPartition(DB_NAME, TABLE_NAME, (String)null);
   }
 
-
+  /**
+   * Testing getPartitionRequest(GetPartitionRequest) ->
+   *         get_partition_req(PartitionRequest).
+   *
+   */
+  @Test
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
+  public void testGetPartitionRequest() throws Exception {
+    createTable3PartCols1Part(client);
+    List<String> parts = Lists.newArrayList("1997", "05", "16");
+    GetPartitionRequest req = new GetPartitionRequest();
+    req.setCatName(MetaStoreUtils.getDefaultCatalog(metaStore.getConf()));
+    req.setDbName(DB_NAME);
+    req.setTblName(TABLE_NAME);
+    req.setPartVals(parts);
+    GetPartitionResponse res = client.getPartitionRequest(req);
+    Partition partition = res.getPartition();
+    assertNotNull(partition);
+    assertEquals(parts, partition.getValues());
+  }
 
   /**
    * Testing getPartition(String,String,List(String)) ->
@@ -336,11 +351,9 @@ public class TestGetPartitions extends MetaStoreClientTest {
     client.getPartition(DB_NAME, TABLE_NAME, (List<String>)null);
   }
 
-
-
   /**
    * Testing getPartitionsByNames(String,String,List(String)) ->
-   *         get_partitions_by_names(String,String,List(String)).
+   *         get_partitions_by_names(PartitionsRequest).
    */
   @Test
   public void testGetPartitionsByNames() throws Exception {
@@ -386,12 +399,12 @@ public class TestGetPartitions extends MetaStoreClientTest {
     client.getPartitionsByNames(DB_NAME, "", Lists.newArrayList("yyyy=2000/mm=01/dd=02"));
   }
 
-  @Test(expected = NoSuchObjectException.class)
+  @Test(expected = TException.class)
   public void testGetPartitionsByNamesNoTable() throws Exception {
     client.getPartitionsByNames(DB_NAME, TABLE_NAME, Lists.newArrayList("yyyy=2000/mm=01/dd=02"));
   }
 
-  @Test(expected = NoSuchObjectException.class)
+  @Test(expected = TException.class)
   public void testGetPartitionsByNamesNoDb() throws Exception {
     client.dropDatabase(DB_NAME);
     client.getPartitionsByNames(DB_NAME, TABLE_NAME, Lists.newArrayList("yyyy=2000/mm=01/dd=02"));
@@ -486,7 +499,8 @@ public class TestGetPartitions extends MetaStoreClientTest {
         Lists.newArrayList("1997", "05"), "user0", Lists.newArrayList("group0"));
   }
 
-  @Test
+  @Test(expected = MetaException.class)
+  // null DB would throw NPE wrapped up in MetaException
   public void testGetPartitionWithAuthInfoNullDbName() throws Exception {
     try {
       createTable3PartCols1PartAuthOn(client);
@@ -498,7 +512,8 @@ public class TestGetPartitions extends MetaStoreClientTest {
     }
   }
 
-  @Test
+  @Test(expected = MetaException.class)
+  // null table would throw NPE wrapped up in MetaException
   public void testGetPartitionWithAuthInfoNullTblName() throws Exception {
     try {
       createTable3PartCols1PartAuthOn(client);
@@ -607,14 +622,12 @@ public class TestGetPartitions extends MetaStoreClientTest {
         Lists.newArrayList("1997", "05", "16"), "user0", Lists.newArrayList("group0"));
   }
 
-  @Test(expected = NoSuchObjectException.class)
+  @Test(expected = TException.class)
   @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void getPartitionsByNamesBogusCatalog() throws TException {
     createTable3PartCols1Part(client);
     client.getPartitionsByNames("bogus", DB_NAME, TABLE_NAME,
         Collections.singletonList("yyyy=1997/mm=05/dd=16"));
   }
-
-
 
 }

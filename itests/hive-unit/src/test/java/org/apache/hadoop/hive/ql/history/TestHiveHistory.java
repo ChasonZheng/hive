@@ -112,7 +112,7 @@ public class TestHiveHistory {
         db.createTable(src, cols, null, TextInputFormat.class,
             IgnoreKeyTextOutputFormat.class);
         db.loadTable(hadoopDataFile[i], src,
-          LoadFileType.KEEP_EXISTING, false, false, false, false, null, 0, false);
+          LoadFileType.KEEP_EXISTING, false, false, false, false, null, 0, false, false);
         i++;
       }
 
@@ -151,10 +151,7 @@ public class TestHiveHistory {
 
       String cmd = "select a.key+1 from src a";
       IDriver d = DriverFactory.newDriver(conf);
-      int ret = d.run(cmd).getResponseCode();
-      if (ret != 0) {
-        fail("Failed");
-      }
+      d.run(cmd);
       HiveHistoryViewer hv = new HiveHistoryViewer(SessionState.get()
           .getHiveHistory().getHistFileName());
       Map<String, QueryInfo> jobInfoMap = hv.getJobInfoMap();

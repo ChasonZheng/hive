@@ -52,6 +52,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+@org.junit.Ignore("HIVE-22620")
 public class TestSSL {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestSSL.class);
@@ -469,6 +470,7 @@ public class TestSSL {
    * @throws Exception
    */
   @Test
+  @Ignore("HIVE-22621: test case is unstable")
   public void testMetastoreConnectionWrongCertCN() throws Exception {
     SSLTestUtils.setMetastoreSslConf(conf);
     conf.setVar(ConfVars.HIVE_METASTORE_SSL_KEYSTORE_PATH,

@@ -17,17 +17,20 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump;
 
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -44,6 +47,8 @@ import org.slf4j.LoggerFactory;
 import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -51,10 +56,12 @@ import java.util.Set;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 
 public class Utils {
   private static Logger LOG = LoggerFactory.getLogger(Utils.class);
   public static final String BOOTSTRAP_DUMP_STATE_KEY_PREFIX = "bootstrap.dump.state.";
+  private static final int DEF_BUF_SIZE = 8 * 1024;
 
   public enum ReplDumpState {
     IDLE, ACTIVE
@@ -62,23 +69,128 @@ public class Utils {
 
   public static void writeOutput(List<List<String>> listValues, Path outputFile, HiveConf hiveConf)
       throws SemanticException {
-    DataOutputStream outStream = null;
+    writeOutput(listValues, outputFile, hiveConf, false);
+  }
+
+  public static void writeOutput(List<List<String>> listValues, Path outputFile, HiveConf hiveConf, boolean update)
+          throws SemanticException {
+    Retryable retryable = Retryable.builder()
+      .withHiveConf(hiveConf)
+      .withRetryOnException(IOException.class).build();
     try {
-      FileSystem fs = outputFile.getFileSystem(hiveConf);
-      outStream = fs.create(outputFile);
-      for (List<String> values : listValues) {
-        outStream.writeBytes((values.get(0) == null ? Utilities.nullStringOutput : values.get(0)));
-        for (int i = 1; i < values.size(); i++) {
-          outStream.write(Utilities.tabCode);
-          outStream.writeBytes((values.get(i) == null ? Utilities.nullStringOutput : values.get(i)));
+      retryable.executeCallable((Callable<Void>) () -> {
+        DataOutputStream outStream = null;
+        try {
+          FileSystem fs = outputFile.getFileSystem(hiveConf);
+          outStream = fs.create(outputFile, update);
+          for (List<String> values : listValues) {
+            outStream.writeBytes((values.get(0) == null ? Utilities.nullStringOutput : values.get(0)));
+            for (int i = 1; i < values.size(); i++) {
+              outStream.write(Utilities.tabCode);
+              outStream.writeBytes((values.get(i) == null ? Utilities.nullStringOutput : values.get(i)));
+            }
+            outStream.write(Utilities.newLineCode);
+          }
+        } finally {
+          IOUtils.closeStream(outStream);
         }
-        outStream.write(Utilities.newLineCode);
-      }
-    } catch (IOException e) {
+        return null;
+      });
+    } catch (Exception e) {
       throw new SemanticException(e);
-    } finally {
-      IOUtils.closeStream(outStream);
     }
+  }
+
+  public static long writeFile(FileSystem fs, Path exportFilePath, InputStream is,
+                               HiveConf conf) throws SemanticException {
+    Retryable retryable = Retryable.builder()
+      .withHiveConf(conf)
+      .withRetryOnException(IOException.class).build();
+    try {
+      return retryable.executeCallable(() -> {
+        FSDataOutputStream fos = null;
+        try {
+          long bytesWritten;
+          fos = fs.create(exportFilePath);
+          byte[] buffer = new byte[DEF_BUF_SIZE];
+          int bytesRead;
+          while ((bytesRead = is.read(buffer)) != -1) {
+            fos.write(buffer, 0, bytesRead);
+          }
+          bytesWritten = fos.getPos();
+          return bytesWritten;
+        } finally {
+          if (fos != null) {
+            fos.close();
+          }
+        }
+      });
+    } catch (Exception e) {
+      throw new SemanticException(e);
+    }
+  }
+
+  public static void writeStackTrace(Exception e, Path outputFile, HiveConf conf) throws SemanticException {
+    Retryable retryable = Retryable.builder()
+      .withHiveConf(conf)
+      .withRetryOnException(IOException.class).withFailOnException(FileNotFoundException.class).build();
+    try {
+      retryable.executeCallable((Callable<Void>) () -> {
+        PrintWriter pw = new PrintWriter(outputFile.getFileSystem(conf).create(outputFile));
+        e.printStackTrace(pw);
+        pw.close();
+        return null;
+      });
+    } catch (Exception ex) {
+      throw new SemanticException(ex);
+    }
+  }
+
+  public static void writeOutput(String content, Path outputFile, HiveConf hiveConf)
+          throws SemanticException {
+    Retryable retryable = Retryable.builder()
+      .withHiveConf(hiveConf)
+      .withRetryOnException(IOException.class).build();
+    try {
+      retryable.executeCallable((Callable<Void>) () -> {
+        DataOutputStream outStream = null;
+        try {
+          FileSystem fs = outputFile.getFileSystem(hiveConf);
+          outStream = fs.create(outputFile);
+          outStream.writeBytes(content);
+          outStream.write(Utilities.newLineCode);
+        } finally {
+          IOUtils.closeStream(outStream);
+        }
+        return null;
+      });
+    } catch (Exception e) {
+      throw new SemanticException(e);
+    }
+  }
+
+  public static void create(Path outputFile, HiveConf hiveConf)
+          throws SemanticException {
+    Retryable retryable = Retryable.builder()
+      .withHiveConf(hiveConf)
+      .withRetryOnException(IOException.class).build();
+    try {
+      retryable.executeCallable((Callable<Void>) () -> {
+        FileSystem fs = outputFile.getFileSystem(hiveConf);
+        fs.create(outputFile).close();
+        return null;
+      });
+    } catch (Exception e) {
+      throw new SemanticException(e);
+    }
+  }
+
+  public static boolean fileExists(Path filePath, HiveConf hiveConf) throws IOException {
+    FileSystem fs = filePath.getFileSystem(hiveConf);
+    if (fs.exists(filePath)) {
+      return true;
+    }
+    return false;
   }
 
   public static Iterable<String> matchesDb(Hive db, String dbPattern) throws HiveException {
@@ -269,5 +381,15 @@ public class Utils {
     } else {
       return Collections.singletonList(fromPath);
     }
+  }
+
+  public static boolean shouldDumpMetaDataOnly(HiveConf conf) {
+    return conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY);
+  }
+
+  public static boolean shouldDumpMetaDataOnlyForExternalTables(Table table, HiveConf conf) {
+    return (conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES) &&
+                    table.getTableType().equals(TableType.EXTERNAL_TABLE) &&
+                    conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE));
   }
 }

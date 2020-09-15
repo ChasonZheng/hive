@@ -80,6 +80,7 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:i:int, 1:type:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: type (type: string), i (type: int)
+                    null sort order: az
                     sort order: ++
                     Map-reduce partition columns: type (type: string)
                     Reduce Sink Vectorization:
@@ -90,7 +91,7 @@ STAGE PLANS:
                         partitionColumns: 1:string
                     Statistics: Num rows: 3 Data size: 267 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true

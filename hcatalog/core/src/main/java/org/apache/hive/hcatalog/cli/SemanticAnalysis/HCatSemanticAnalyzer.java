@@ -25,12 +25,12 @@ import org.apache.hadoop.hive.ql.ddl.database.desc.DescDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.database.drop.DropDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.database.show.ShowDatabasesDesc;
 import org.apache.hadoop.hive.ql.ddl.database.use.SwitchDatabaseDesc;
-import org.apache.hadoop.hive.ql.ddl.table.info.DescTableDesc;
-import org.apache.hadoop.hive.ql.ddl.table.info.ShowTableStatusDesc;
-import org.apache.hadoop.hive.ql.ddl.table.info.ShowTablesDesc;
-import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableDropPartitionDesc;
-import org.apache.hadoop.hive.ql.ddl.table.partition.ShowPartitionsDesc;
-import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableSetLocationDesc;
+import org.apache.hadoop.hive.ql.ddl.table.info.desc.DescTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.info.show.status.ShowTableStatusDesc;
+import org.apache.hadoop.hive.ql.ddl.table.info.show.tables.ShowTablesDesc;
+import org.apache.hadoop.hive.ql.ddl.table.partition.drop.AlterTableDropPartitionDesc;
+import org.apache.hadoop.hive.ql.ddl.table.partition.show.ShowPartitionsDesc;
+import org.apache.hadoop.hive.ql.ddl.table.storage.set.location.AlterTableSetLocationDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -127,7 +127,8 @@ public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {
     case HiveParser.TOK_ALTERTABLE_ADDPARTS:
     case HiveParser.TOK_ALTERTABLE_ADDCOLS:
     case HiveParser.TOK_ALTERTABLE_CHANGECOL_AFTER_POSITION:
-    case HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES:
+    case HiveParser.TOK_ALTERTABLE_SETSERDEPROPERTIES:
+    case HiveParser.TOK_ALTERTABLE_UNSETSERDEPROPERTIES:
     case HiveParser.TOK_ALTERTABLE_CLUSTER_SORT:
     case HiveParser.TOK_ALTERTABLE_DROPPARTS:
     case HiveParser.TOK_ALTERTABLE_PROPERTIES:
@@ -152,7 +153,7 @@ public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {
 
   @Override
   public void postAnalyze(HiveSemanticAnalyzerHookContext context,
-              List<Task<? extends Serializable>> rootTasks) throws SemanticException {
+              List<Task<?>> rootTasks) throws SemanticException {
 
     try {
 
@@ -212,7 +213,8 @@ public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {
           case HiveParser.TOK_ALTERTABLE_ADDPARTS:
           case HiveParser.TOK_ALTERTABLE_ADDCOLS:
           case HiveParser.TOK_ALTERTABLE_CHANGECOL_AFTER_POSITION:
-          case HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES:
+          case HiveParser.TOK_ALTERTABLE_SETSERDEPROPERTIES:
+          case HiveParser.TOK_ALTERTABLE_UNSETSERDEPROPERTIES:
           case HiveParser.TOK_ALTERTABLE_CLUSTER_SORT:
           case HiveParser.TOK_ALTERTABLE_DROPPARTS:
           case HiveParser.TOK_ALTERTABLE_PROPERTIES:
@@ -306,7 +308,7 @@ public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {
       // table name. If columns have separate authorization domain, it
       // must be honored
       DescTableDesc descTable = (DescTableDesc)ddlDesc;
-      String tableName = extractTableName(descTable.getTableName());
+      String tableName = extractTableName(descTable.getDbTableName());
       authorizeTable(cntxt.getHive(), tableName, Privilege.SELECT);
     } else if (ddlDesc instanceof ShowTableStatusDesc) {
       ShowTableStatusDesc showTableStatus = (ShowTableStatusDesc)ddlDesc;
@@ -336,7 +338,7 @@ public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {
     } else if (ddlDesc instanceof AlterTableSetLocationDesc) {
       AlterTableSetLocationDesc alterTable = (AlterTableSetLocationDesc)ddlDesc;
       Table table = hive.getTable(SessionState.get().getCurrentDatabase(),
-          Utilities.getDbTableName(alterTable.getTableName())[1], false);
+          Utilities.getDbTableName(alterTable.getDbTableName())[1], false);
 
       Partition part = null;
       if (alterTable.getPartitionSpec() != null) {

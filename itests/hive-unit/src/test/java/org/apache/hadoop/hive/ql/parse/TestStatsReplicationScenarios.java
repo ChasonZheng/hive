@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
@@ -96,21 +97,23 @@ public class TestStatsReplicationScenarios {
     Map<String, String> additionalOverrides = new HashMap<String, String>() {{
         put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
         put(HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname, "true");
+        put(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "false");
       }};
-    Map<String, String> overrides = new HashMap<>();
+    Map<String, String> replicatedOverrides = new HashMap<>();
 
-    overrides.putAll(additionalOverrides);
-    overrides.putAll(replicaOverrides);
-    replica = new WarehouseInstance(LOG, miniDFSCluster, overrides);
+    replicatedOverrides.putAll(additionalOverrides);
+    replicatedOverrides.putAll(replicaOverrides);
 
     // Run with autogather false on primary if requested
+    Map<String, String> sourceOverrides = new HashMap<>();
     hasAutogather = autogather;
     additionalOverrides.put(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname,
             autogather ? "true" : "false");
-    overrides.clear();
-    overrides.putAll(additionalOverrides);
-    overrides.putAll(primaryOverrides);
-    primary = new WarehouseInstance(LOG, miniDFSCluster, overrides);
+    sourceOverrides.putAll(additionalOverrides);
+    sourceOverrides.putAll(primaryOverrides);
+    primary = new WarehouseInstance(LOG, miniDFSCluster, sourceOverrides);
+    replicatedOverrides.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
+    replica = new WarehouseInstance(LOG, miniDFSCluster, replicatedOverrides);
 
     // Use transactional tables
     acidTableKindToUse = acidTableKind;
@@ -124,6 +127,10 @@ public class TestStatsReplicationScenarios {
 
   @Before
   public void setup() throws Throwable {
+    // set up metastore client cache
+    if (conf.getBoolVar(HiveConf.ConfVars.MSC_CACHE_ENABLED)) {
+      HiveMetaStoreClientWithLocalCache.init();
+    }
     primaryDbName = testName.getMethodName() + "_" + +System.currentTimeMillis();
     replicatedDbName = "replicated_" + primaryDbName;
     primary.run("create database " + primaryDbName + " WITH DBPROPERTIES ( '" +
@@ -318,7 +325,7 @@ public class TestStatsReplicationScenarios {
 
     // Take dump
     WarehouseInstance.Tuple dumpTuple = primary.run("use " + primaryDbName)
-            .dump(primaryDbName, lastReplicationId, withClauseList);
+            .dump(primaryDbName, withClauseList);
 
 
     // Load, if necessary changing configuration.
@@ -330,14 +337,14 @@ public class TestStatsReplicationScenarios {
     // checkpoint for a table in the middle of list of tables.
     if (failRetry) {
       if (lastReplicationId == null) {
-        failBootstrapLoad(dumpTuple, tableNames.size()/2);
+        failBootstrapLoad(tableNames.size()/2);
       } else {
-        failIncrementalLoad(dumpTuple);
+        failIncrementalLoad();
       }
     }
 
     // Load, possibly a retry
-    replica.load(replicatedDbName, dumpTuple.dumpLocation);
+    replica.load(replicatedDbName, primaryDbName);
 
     // Metadata load may not load all the events.
     if (!metadataOnly) {
@@ -363,9 +370,8 @@ public class TestStatsReplicationScenarios {
 
   /**
    * Run a bootstrap that will fail.
-   * @param tuple the location of bootstrap dump
    */
-  private void failBootstrapLoad(WarehouseInstance.Tuple tuple, int failAfterNumTables) throws Throwable {
+  private void failBootstrapLoad(int failAfterNumTables) throws Throwable {
     // fail setting ckpt directory property for the second table so that we test the case when
     // bootstrap load fails after some but not all tables are loaded.
     BehaviourInjection<CallerArguments, Boolean> callerVerifier
@@ -391,14 +397,14 @@ public class TestStatsReplicationScenarios {
 
     InjectableBehaviourObjectStore.setAlterTableModifier(callerVerifier);
     try {
-      replica.loadFailure(replicatedDbName, tuple.dumpLocation);
+      replica.loadFailure(replicatedDbName, primaryDbName);
       callerVerifier.assertInjectionsPerformed(true, false);
     } finally {
       InjectableBehaviourObjectStore.resetAlterTableModifier();
     }
   }
 
-  private void failIncrementalLoad(WarehouseInstance.Tuple dumpTuple) throws Throwable {
+  private void failIncrementalLoad() throws Throwable {
     // fail add notification when second update table stats event is encountered. Thus we
     // test successful application as well as failed application of this event.
     BehaviourInjection<NotificationEvent, Boolean> callerVerifier
@@ -421,7 +427,7 @@ public class TestStatsReplicationScenarios {
 
     InjectableBehaviourObjectStore.setAddNotificationModifier(callerVerifier);
     try {
-      replica.loadFailure(replicatedDbName, dumpTuple.dumpLocation);
+      replica.loadFailure(replicatedDbName, primaryDbName);
     } finally {
       InjectableBehaviourObjectStore.resetAddNotificationModifier();
     }
@@ -449,7 +455,7 @@ public class TestStatsReplicationScenarios {
 
     InjectableBehaviourObjectStore.setAddNotificationModifier(callerVerifier);
     try {
-      replica.loadFailure(replicatedDbName, dumpTuple.dumpLocation);
+      replica.loadFailure(replicatedDbName, primaryDbName);
     } finally {
       InjectableBehaviourObjectStore.resetAddNotificationModifier();
     }

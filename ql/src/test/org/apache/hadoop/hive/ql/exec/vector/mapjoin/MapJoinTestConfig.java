@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -308,6 +308,9 @@ public class MapJoinTestConfig {
     case LEFT_SEMI:
       joinDescType = JoinDesc.LEFT_SEMI_JOIN;
       break;
+    case LEFT_ANTI:
+        joinDescType = JoinDesc.ANTI_JOIN;
+        break;
     case OUTER:
       joinDescType = JoinDesc.LEFT_OUTER_JOIN;
       break;
@@ -363,6 +366,7 @@ public class MapJoinTestConfig {
       hashTableKind = HashTableKind.HASH_MULTISET;
       break;
     case LEFT_SEMI:
+    case LEFT_ANTI:
       hashTableKind = HashTableKind.HASH_SET;
       break;
     case OUTER:

@@ -271,6 +271,7 @@ public class TestReplChangeManager {
     FileSystem fs = warehouse.getWhRoot().getFileSystem(hiveConf);
     long now = System.currentTimeMillis();
     Path dirDb = new Path(warehouse.getWhRoot(), "db3");
+    fs.delete(dirDb, true);
     fs.mkdirs(dirDb);
     Path dirTbl1 = new Path(dirDb, "tbl1");
     fs.mkdirs(dirTbl1);
@@ -309,13 +310,13 @@ public class TestReplChangeManager {
     assertTrue(fs.exists(ReplChangeManager.getCMPath(hiveConf, part32.getName(), fileChksum32, cmroot.toString())));
 
     fs.setTimes(ReplChangeManager.getCMPath(hiveConf, part11.getName(), fileChksum11, cmroot.toString()),
-            now - 86400*1000*2, now - 86400*1000*2);
+            now - 7 * 86400 * 1000 * 2, now - 7 * 86400 * 1000 * 2);
     fs.setTimes(ReplChangeManager.getCMPath(hiveConf, part21.getName(), fileChksum21, cmroot.toString()),
-            now - 86400*1000*2, now - 86400*1000*2);
+            now - 7 * 86400 * 1000 * 2, now - 7 * 86400 * 1000 * 2);
     fs.setTimes(ReplChangeManager.getCMPath(hiveConf, part31.getName(), fileChksum31, cmroot.toString()),
-            now - 86400*1000*2, now - 86400*1000*2);
+            now - 7 * 86400 * 1000 * 2, now - 7 * 86400 * 1000 * 2);
     fs.setTimes(ReplChangeManager.getCMPath(hiveConf, part32.getName(), fileChksum32, cmroot.toString()),
-            now - 86400*1000*2, now - 86400*1000*2);
+            now - 7 * 86400 * 1000 * 2, now - 7 * 86400 * 1000 * 2);
 
     ReplChangeManager.scheduleCMClearer(hiveConf);
 

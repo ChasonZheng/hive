@@ -25,13 +25,15 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.google.common.annotations.VisibleForTesting;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
+import org.apache.hadoop.hive.llap.LlapHiveUtils;
 import org.apache.hadoop.hive.llap.counters.FragmentCountersMap;
 import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
@@ -41,8 +43,7 @@ import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer.Includes;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer.SchemaEvolutionFactory;
 import org.apache.hadoop.hive.llap.io.decode.ReadPipeline;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTezUtils;
-import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -55,7 +56,6 @@ import org.apache.hadoop.hive.ql.io.orc.encoded.Reader;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -75,8 +75,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-import com.google.common.collect.Lists;
-
 class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>, Consumer<ColumnVectorBatch> {
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapRecordReader.class);
@@ -87,6 +85,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
   private final SearchArgument sarg;
   private final VectorizedRowBatchCtx rbCtx;
   private final boolean isVectorized;
+  private final boolean probeDecodeEnabled;
   private VectorizedOrcAcidRowBatchReader acidReader;
   private final Object[] partitionValues;
 
@@ -98,7 +97,8 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
   private boolean isFirst = true;
   private int maxQueueSize = 0;
 
-  private boolean isClosed = false, isInterrupted = false;
+  private volatile boolean isClosed = false;
+  private volatile boolean isInterrupted = false;
   private final ConsumerFeedback<ColumnVectorBatch> feedback;
   private final QueryFragmentCounters counters;
   private long firstReturnTime;
@@ -107,6 +107,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
   private final ReadPipeline rp;
   private final ExecutorService executor;
   private final boolean isAcidScan;
+  private final boolean isAcidFormat;
 
   /**
    * Creates the record reader and checks the input-specific compatibility.
@@ -116,7 +117,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
       List<Integer> tableIncludedCols, String hostName, ColumnVectorProducer cvp,
       ExecutorService executor, InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe,
       Reporter reporter, Configuration daemonConf) throws IOException, HiveException {
-    MapWork mapWork = findMapWork(job);
+    MapWork mapWork = LlapHiveUtils.findMapWork(job);
     if (mapWork == null) return null; // No compatible MapWork.
     LlapRecordReader rr = new LlapRecordReader(mapWork, job, split, tableIncludedCols, hostName,
         cvp, executor, sourceInputFormat, sourceSerDe, reporter, daemonConf);
@@ -172,6 +173,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
             queueLimitBase,
             queueLimitMin,
             rbCtx.getRowColumnTypeInfos(),
+            rbCtx.getDataColumnNums(),
             decimal64Support);
     LOG.info("Queue limit for LlapRecordReader is " + limit);
     this.queue = new ArrayBlockingQueue<>(limit);
@@ -187,11 +189,22 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
 
     this.isVectorized = HiveConf.getBoolVar(jobConf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
     if (isAcidScan) {
+      OrcSplit orcSplit = (OrcSplit) split;
       this.acidReader = new VectorizedOrcAcidRowBatchReader(
-          (OrcSplit) split, jobConf, Reporter.NULL, null, rbCtx, true);
+          orcSplit, jobConf, Reporter.NULL, null, rbCtx, true, mapWork);
+      isAcidFormat = !orcSplit.isOriginal();
+    } else {
+      isAcidFormat = false;
     }
-    this.includes = new IncludesImpl(tableIncludedCols, isAcidScan, rbCtx,
+
+    this.includes = new IncludesImpl(tableIncludedCols, isAcidFormat, rbCtx,
         schema, job, isAcidScan && acidReader.includeAcidColumns());
+
+    this.probeDecodeEnabled = HiveConf.getBoolVar(jobConf, ConfVars.HIVE_OPTIMIZE_SCAN_PROBEDECODE);
+    if (this.probeDecodeEnabled) {
+      includes.setProbeDecodeContext(mapWork.getProbeDecodeContext());
+      LOG.info("LlapRecordReader ProbeDecode is enabled");
+    }
 
     // Create the consumer of encoded data; it will coordinate decoding to CVBs.
     feedback = rp = cvp.createReadPipeline(this, split, includes, sarg, counters, includes,
@@ -221,15 +234,16 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
       int queueLimitMax,
       int queueLimitMin,
       TypeInfo[] typeInfos,
+      int[] projectedColumnNums,
       final boolean decimal64Support) {
     assert queueLimitMax >= queueLimitMin;
     // If the values are equal, the queue limit is fixed.
     if (queueLimitMax == queueLimitMin) return queueLimitMax;
     // If there are no columns (projection only join?) just assume no weight.
-    if (typeInfos == null || typeInfos.length == 0) return queueLimitMax;
+    if (projectedColumnNums == null || projectedColumnNums.length == 0) return queueLimitMax;
     // total weight as bytes
     double totalWeight = 0;
-    int numberOfProjectedColumns = typeInfos.length;
+    int numberOfProjectedColumns = projectedColumnNums.length;
     double scale = Math.max(Math.log(numberOfProjectedColumns), 1);
 
     // Assuming that an empty Column Vector is about 96 bytes the object
@@ -255,8 +269,8 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     //     88     8                                                    byte[] BytesColumnVector.smallBuffer
     long columnVectorBaseSize = (long) (96 * numberOfProjectedColumns * scale);
 
-    for (int i = 0; i < typeInfos.length; i++) {
-      TypeInfo ti = typeInfos[i];
+    for (int i = 0; i < projectedColumnNums.length; i++) {
+      TypeInfo ti = typeInfos[projectedColumnNums[i]];
       int colWeight;
       if (ti.getCategory() != Category.PRIMITIVE) {
         colWeight = COL_WEIGHT_COMPLEX;
@@ -300,37 +314,6 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     totalWeight +=  columnVectorBaseSize;
     int bestEffortSize = Math.min((int) (maxBufferedSize / totalWeight), queueLimitMax);
     return Math.max(bestEffortSize, queueLimitMin);
-  }
-
-
-  private static MapWork findMapWork(JobConf job) throws HiveException {
-    String inputName = job.get(Utilities.INPUT_NAME, null);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Initializing for input " + inputName);
-    }
-    String prefixes = job.get(DagUtils.TEZ_MERGE_WORK_FILE_PREFIXES);
-    if (prefixes != null && !StringUtils.isBlank(prefixes)) {
-      // Currently SMB is broken, so we cannot check if it's  compatible with IO elevator.
-      // So, we don't use the below code that would get the correct MapWork. See HIVE-16985.
-      return null;
-    }
-
-    BaseWork work = null;
-    // HIVE-16985: try to find the fake merge work for SMB join, that is really another MapWork.
-    if (inputName != null) {
-      if (prefixes == null ||
-          !Lists.newArrayList(prefixes.split(",")).contains(inputName)) {
-        inputName = null;
-      }
-    }
-    if (inputName != null) {
-      work = Utilities.getMergeWork(job, inputName);
-    }
-
-    if (!(work instanceof MapWork)) {
-      work = Utilities.getMapWork(job);
-    }
-    return (MapWork) work;
   }
 
   /**
@@ -397,7 +380,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
       counters.incrWallClockCounter(LlapIOCounters.CONSUMER_TIME_NS, firstReturnTime);
       return false;
     }
-    if (isAcidScan) {
+    if (isAcidFormat) {
       vrb.selectedInUse = true;//why?
       if (isVectorized) {
         // TODO: relying everywhere on the magical constants and columns being together means ACID
@@ -656,14 +639,19 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     private TypeDescription readerSchema;
     private JobConf jobConf;
 
+    // ProbeDecode Context for row-level filtering
+    private TableScanOperator.ProbeDecodeContext probeDecodeContext = null;
+
     public IncludesImpl(List<Integer> tableIncludedCols, boolean isAcidScan,
         VectorizedRowBatchCtx rbCtx, TypeDescription readerSchema,
         JobConf jobConf, boolean includeAcidColumns) {
           // Note: columnIds below makes additional changes for ACID. Don't use this var directly.
       this.readerSchema = readerSchema;
       this.jobConf = jobConf;
+      this.includeAcidColumns = includeAcidColumns;
+
+      // Assume including everything means the VRB will have everything.
       if (tableIncludedCols == null) {
-        // Assume including everything means the VRB will have everything.
         // TODO: this is rather brittle, esp. in view of schema evolution (in abstract, not as 
         //       currently implemented in Hive). The compile should supply the columns it expects
         //       to see, which is not "all, of any schema". Is VRB row CVs the right mechanism
@@ -673,43 +661,39 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
           tableIncludedCols.add(i);
         }
       }
-      LOG.debug("Logical table includes: {}", tableIncludedCols);
+
       this.readerLogicalColumnIds = tableIncludedCols;
+      LOG.debug("Logical table includes: {}", readerLogicalColumnIds);
+
       // Note: schema evolution currently does not support column index changes.
       //       So, the indices should line up... to be fixed in SE v2?
-      List<Integer> filePhysicalColumnIds = readerLogicalColumnIds;
       if (isAcidScan) {
         int rootCol = OrcInputFormat.getRootColumn(false);
-        filePhysicalColumnIds = new ArrayList<>(filePhysicalColumnIds.size() + rootCol);
+        this.filePhysicalColumnIds = new ArrayList<>(readerLogicalColumnIds.size() + rootCol);
         this.acidStructColumnId = rootCol - 1; // OrcRecordUpdater.ROW. This is somewhat fragile...
-        // Note: this guarantees that physical column IDs are in order.
-        for (int i = 0; i < rootCol; ++i) {
-          // We don't want to include the root struct in ACID case; it would cause the whole
-          // struct to get read without projection.
-          if (acidStructColumnId == i) continue;
-          if(!includeAcidColumns) {
-            /*
-              if not including acid columns, we still want to number the
-              physical columns as if acid columns are included becase
-              {@link #generateFileIncludes(TypeDescription)} takes the file
-              schema as input
-              (eg <op, owid, writerId, rowid, cwid, <f1, ... fn>>)
-             */
-            continue;
+        if (includeAcidColumns) {
+          // Up to acidStructColumnId: as we don't want to include the root struct in ACID case;
+          // it would cause the whole struct to get read without projection.
+          for (int i = 0; i < acidStructColumnId; ++i) {
+            // Note: this guarantees that physical column IDs are in order.
+            filePhysicalColumnIds.add(i);
           }
-          filePhysicalColumnIds.add(i);
         }
+        /**
+         * Even when NOT including acid columns, we still want to number the
+         * physical columns as if acid columns are included because
+         * {@link #generateFileIncludes(TypeDescription)} takes the file
+         * schema as input
+         * (eg <op, owid, writerId, rowid, cwid, <f1, ... fn>>)
+         */
         for (int tableColumnId : readerLogicalColumnIds) {
-          //but make sure to generate correct ids in type tree in-order
-          //walk order
+          // Make sure to generate correct ids in type tree in-order traversal
+          /* ok, so if filePhysicalColumnIds include acid column ids, we end up decoding the vectors*/
           filePhysicalColumnIds.add(rootCol + tableColumnId);
         }
-        /*ok, so if filePhysicalColumnIds include acid column ids, we end up
-         decoding the vectors*/
+      } else {
+        this.filePhysicalColumnIds = readerLogicalColumnIds;
       }
- 
-      this.filePhysicalColumnIds = filePhysicalColumnIds;
-      this.includeAcidColumns = includeAcidColumns;
     }
 
     @Override
@@ -737,6 +721,10 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
           fileSchema, filePhysicalColumnIds, acidStructColumnId);
     }
 
+    public void setProbeDecodeContext(TableScanOperator.ProbeDecodeContext currProbeDecodeContext) {
+      this.probeDecodeContext = currProbeDecodeContext;
+    }
+
     @Override
     public List<Integer> getPhysicalColumnIds() {
       return filePhysicalColumnIds;
@@ -752,5 +740,45 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
       return OrcInputFormat.genIncludedTypes(
           fileSchema, filePhysicalColumnIds, acidStructColumnId);
     }
+
+    @Override
+    public String[] getOriginalColumnNames(TypeDescription fileSchema) {
+      return OrcInputFormat.genIncludedColNames(
+              fileSchema, filePhysicalColumnIds, acidStructColumnId);
+    }
+
+    @Override
+    public String getQueryId() {
+      return HiveConf.getVar(jobConf, HiveConf.ConfVars.HIVEQUERYID);
+    }
+
+    @Override
+    public boolean isProbeDecodeEnabled() {
+      return this.probeDecodeContext != null;
+    }
+
+    @Override
+    public byte getProbeMjSmallTablePos() {
+      return this.probeDecodeContext.getMjSmallTablePos();
+    }
+
+    @Override
+    public int getProbeColIdx() {
+      // TODO: is this the best way to get the ColId?
+      Pattern pattern = Pattern.compile("_col([0-9]+)");
+      Matcher matcher = pattern.matcher(this.probeDecodeContext.getMjBigTableKeyColName());
+      return matcher.find() ? Integer.parseInt(matcher.group(1)) : -1;
+    }
+
+    @Override
+    public String getProbeColName() {
+      return this.probeDecodeContext.getMjBigTableKeyColName();
+    }
+
+    @Override
+    public String getProbeCacheKey() {
+      return this.probeDecodeContext.getMjSmallTableCacheKey();
+    }
+
   }
 } 

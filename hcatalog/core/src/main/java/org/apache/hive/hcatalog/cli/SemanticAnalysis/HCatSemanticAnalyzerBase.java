@@ -19,7 +19,6 @@
 
 package org.apache.hive.hcatalog.cli.SemanticAnalysis;
 
-import java.io.Serializable;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -55,7 +54,7 @@ public class HCatSemanticAnalyzerBase extends AbstractSemanticAnalyzerHook {
 
   @Override
   public void postAnalyze(HiveSemanticAnalyzerHookContext context,
-              List<Task<? extends Serializable>> rootTasks) throws SemanticException {
+              List<Task<?>> rootTasks) throws SemanticException {
     super.postAnalyze(context, rootTasks);
 
     //Authorize the operation.
@@ -86,7 +85,7 @@ public class HCatSemanticAnalyzerBase extends AbstractSemanticAnalyzerHook {
   * @see https://issues.apache.org/jira/browse/HCATALOG-245
   */
   protected void authorizeDDL(HiveSemanticAnalyzerHookContext context,
-                List<Task<? extends Serializable>> rootTasks) throws SemanticException {
+                List<Task<?>> rootTasks) throws SemanticException {
 
     if (!HCatAuthUtil.isAuthorizationEnabled(context.getConf())) {
       return;
@@ -96,7 +95,7 @@ public class HCatSemanticAnalyzerBase extends AbstractSemanticAnalyzerHook {
     try {
       hive = context.getHive();
 
-      for (Task<? extends Serializable> task : rootTasks) {
+      for (Task<?> task : rootTasks) {
         if (task.getWork() instanceof DDLWork) {
           DDLWork work = (DDLWork) task.getWork();
           if (work != null) {
@@ -123,7 +122,8 @@ public class HCatSemanticAnalyzerBase extends AbstractSemanticAnalyzerHook {
   protected void authorize(Privilege[] inputPrivs, Privilege[] outputPrivs)
     throws AuthorizationException, SemanticException {
     try {
-      getAuthProvider().authorize(inputPrivs, outputPrivs);
+      getAuthProvider().authorizeDbLevelOperations(inputPrivs, outputPrivs,
+          null, null);
     } catch (HiveException ex) {
       throw new SemanticException(ex);
     }

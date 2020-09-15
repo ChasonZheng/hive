@@ -32,7 +32,7 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.ql.QTestSystemProperties;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.FsType;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
@@ -130,7 +130,7 @@ public abstract class AbstractCliConfig {
     }
   }
 
-  protected void excludeQuery(String qFile) {
+  private void excludeQuery(String qFile) {
     excludedQueryFileNames.add(qFile);
   }
 
@@ -368,6 +368,7 @@ public abstract class AbstractCliConfig {
     if (clusterType == null) {
       throw new RuntimeException("clustertype cant be null");
     }
+    this.setFsType(clusterType.getDefaultFsType());
   }
 
   protected FsType getFsType() {

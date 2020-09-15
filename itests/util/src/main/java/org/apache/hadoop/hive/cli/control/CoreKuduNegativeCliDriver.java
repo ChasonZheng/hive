@@ -21,7 +21,7 @@ import org.apache.hadoop.hive.kudu.KuduTestSetup;
 import org.apache.hadoop.hive.ql.QTestArguments;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -57,11 +57,6 @@ public class CoreKuduNegativeCliDriver extends CliAdapter {
           .withLlapIo(true)
           .withQTestSetup(new KuduTestSetup())
           .build());
-
-      // do a one time initialization
-      qt.newSession();
-      qt.cleanUp();
-      qt.createSources();
     } catch (Exception e) {
       throw new RuntimeException("Unexpected exception in setUp", e);
     }
@@ -107,15 +102,22 @@ public class CoreKuduNegativeCliDriver extends CliAdapter {
   }
 
   @Override
+  protected QTestUtil getQt() {
+    return qt;
+  }
+
+  @Override
   public void runTest(String tname, String fname, String fpath) {
     long startTime = System.currentTimeMillis();
     try {
       System.err.println("Begin query: " + fname);
       qt.addFile(fpath);
       qt.cliInit(new File(fpath));
-      int ecode = qt.executeClient(fname).getResponseCode();
-      if (ecode == 0) {
+      try {
+        qt.executeClient(fname);
         qt.failed(fname, null);
+      } catch (CommandProcessorException e) {
+        // this is the expected behaviour
       }
 
       QTestProcessExecResult result = qt.checkCliDriverResults(fname);

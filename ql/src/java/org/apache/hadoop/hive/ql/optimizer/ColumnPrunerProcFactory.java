@@ -52,7 +52,7 @@ import org.apache.hadoop.hive.ql.exec.UDTFOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -99,7 +99,7 @@ public final class ColumnPrunerProcFactory {
   /**
    * Node Processor for Column Pruning on Filter Operators.
    */
-  public static class ColumnPrunerFilterProc implements NodeProcessor {
+  public static class ColumnPrunerFilterProc implements SemanticNodeProcessor {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
@@ -130,7 +130,7 @@ public final class ColumnPrunerProcFactory {
   /**
    * Node Processor for Column Pruning on Group By Operators.
    */
-  public static class ColumnPrunerGroupByProc implements NodeProcessor {
+  public static class ColumnPrunerGroupByProc implements SemanticNodeProcessor {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
@@ -139,14 +139,14 @@ public final class ColumnPrunerProcFactory {
       List<FieldNode> colLists = new ArrayList<>();
       GroupByDesc conf = gbOp.getConf();
 
-      ArrayList<ExprNodeDesc> keys = conf.getKeys();
+      List<ExprNodeDesc> keys = conf.getKeys();
       for (ExprNodeDesc key : keys) {
         colLists = mergeFieldNodesWithDesc(colLists, key);
       }
 
-      ArrayList<AggregationDesc> aggrs = conf.getAggregators();
+      List<AggregationDesc> aggrs = conf.getAggregators();
       for (AggregationDesc aggr : aggrs) {
-        ArrayList<ExprNodeDesc> params = aggr.getParameters();
+        List<ExprNodeDesc> params = aggr.getParameters();
         for (ExprNodeDesc param : params) {
           colLists = mergeFieldNodesWithDesc(colLists, param);
         }
@@ -220,7 +220,7 @@ public final class ColumnPrunerProcFactory {
     return new ColumnPrunerGroupByProc();
   }
 
-  public static class ColumnPrunerScriptProc implements NodeProcessor {
+  public static class ColumnPrunerScriptProc implements SemanticNodeProcessor {
     @Override
     @SuppressWarnings("unchecked")
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
@@ -453,7 +453,7 @@ public final class ColumnPrunerProcFactory {
   /**
    * The Default Node Processor for Column Pruning.
    */
-  public static class ColumnPrunerDefaultProc implements NodeProcessor {
+  public static class ColumnPrunerDefaultProc implements SemanticNodeProcessor {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
@@ -478,7 +478,7 @@ public final class ColumnPrunerProcFactory {
    * The Node Processor for Column Pruning on Table Scan Operators. It will
    * store needed columns in tableScanDesc.
    */
-  public static class ColumnPrunerTableScanProc implements NodeProcessor {
+  public static class ColumnPrunerTableScanProc implements SemanticNodeProcessor {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
@@ -566,7 +566,7 @@ public final class ColumnPrunerProcFactory {
   /**
    * The Node Processor for Column Pruning on Reduce Sink Operators.
    */
-  public static class ColumnPrunerReduceSinkProc implements NodeProcessor {
+  public static class ColumnPrunerReduceSinkProc implements SemanticNodeProcessor {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
@@ -646,7 +646,7 @@ public final class ColumnPrunerProcFactory {
   /**
    * The Node Processor for Column Pruning on Lateral View Join Operators.
    */
-  public static class ColumnPrunerLateralViewJoinProc implements NodeProcessor {
+  public static class ColumnPrunerLateralViewJoinProc implements SemanticNodeProcessor {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
@@ -742,7 +742,7 @@ public final class ColumnPrunerProcFactory {
   /**
    * The Node Processor for Column Pruning on Select Operators.
    */
-  public static class ColumnPrunerSelectProc implements NodeProcessor {
+  public static class ColumnPrunerSelectProc implements SemanticNodeProcessor {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
@@ -812,10 +812,10 @@ public final class ColumnPrunerProcFactory {
         }
       }
       if (cols.size() < originalOutputColumnNames.size()) {
-        ArrayList<ExprNodeDesc> newColList = new ArrayList<ExprNodeDesc>();
-        ArrayList<String> newOutputColumnNames = new ArrayList<String>();
-        ArrayList<ColumnInfo> rs_oldsignature = op.getSchema().getSignature();
-        ArrayList<ColumnInfo> rs_newsignature = new ArrayList<ColumnInfo>();
+        List<ExprNodeDesc> newColList = new ArrayList<ExprNodeDesc>();
+        List<String> newOutputColumnNames = new ArrayList<String>();
+        List<ColumnInfo> rs_oldsignature = op.getSchema().getSignature();
+        List<ColumnInfo> rs_newsignature = new ArrayList<ColumnInfo>();
         // The pruning needs to preserve the order of columns in the input schema
         Set<String> colNames = new HashSet<String>();
         for (FieldNode col : cols) {
@@ -899,8 +899,8 @@ public final class ColumnPrunerProcFactory {
     Map<String, ExprNodeDesc> oldMap = reduce.getColumnExprMap();
     LOG.info("RS " + reduce.getIdentifier() + " oldColExprMap: " + oldMap);
     RowSchema oldRS = reduce.getSchema();
-    ArrayList<ColumnInfo> old_signature = oldRS.getSignature();
-    ArrayList<ColumnInfo> signature = new ArrayList<ColumnInfo>(old_signature);
+    List<ColumnInfo> old_signature = oldRS.getSignature();
+    List<ColumnInfo> signature = new ArrayList<ColumnInfo>(old_signature);
 
     List<String> valueColNames = reduceConf.getOutputValueColumnNames();
     ArrayList<String> newValueColNames = new ArrayList<String>();
@@ -969,7 +969,7 @@ public final class ColumnPrunerProcFactory {
   /**
    * The Node Processor for Column Pruning on Join Operators.
    */
-  public static class ColumnPrunerJoinProc implements NodeProcessor {
+  public static class ColumnPrunerJoinProc implements SemanticNodeProcessor {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
@@ -992,7 +992,7 @@ public final class ColumnPrunerProcFactory {
   /**
    * The Node Processor for Column Pruning on Map Join Operators.
    */
-  public static class ColumnPrunerMapJoinProc implements NodeProcessor {
+  public static class ColumnPrunerMapJoinProc implements SemanticNodeProcessor {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
@@ -1015,7 +1015,7 @@ public final class ColumnPrunerProcFactory {
   /**
    * The Node Processor for Column Pruning on Union Operators.
    */
-  public static class ColumnPrunerUnionProc implements NodeProcessor {
+  public static class ColumnPrunerUnionProc implements SemanticNodeProcessor {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
@@ -1042,8 +1042,8 @@ public final class ColumnPrunerProcFactory {
   }
 
   private static void pruneOperator(NodeProcessorCtx ctx,
-      Operator<? extends OperatorDesc> op,
-      List<FieldNode> cols)
+                                    Operator<? extends OperatorDesc> op,
+                                    List<FieldNode> cols)
       throws SemanticException {
     // the pruning needs to preserve the order of columns in the input schema
     RowSchema inputSchema = op.getSchema();
@@ -1071,8 +1071,8 @@ public final class ColumnPrunerProcFactory {
       throws SemanticException {
     RowSchema inputSchema = op.getSchema();
     if (inputSchema != null) {
-      ArrayList<FieldNode> rs = new ArrayList<>();
-      ArrayList<ColumnInfo> inputCols = inputSchema.getSignature();
+      List<FieldNode> rs = new ArrayList<>();
+      List<ColumnInfo> inputCols = inputSchema.getSignature();
       for (ColumnInfo i: inputCols) {
         FieldNode fn = lookupColumn(cols, i.getInternalName());
         if (fn != null) {
@@ -1086,9 +1086,9 @@ public final class ColumnPrunerProcFactory {
   }
 
   private static void pruneJoinOperator(NodeProcessorCtx ctx,
-      CommonJoinOperator op, JoinDesc conf,
-      Map<String, ExprNodeDesc> columnExprMap,
-      Map<Byte, List<Integer>> retainMap, boolean mapJoin) throws SemanticException {
+                                        CommonJoinOperator op, JoinDesc conf,
+                                        Map<String, ExprNodeDesc> columnExprMap,
+                                        Map<Byte, List<Integer>> retainMap, boolean mapJoin) throws SemanticException {
     ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
     List<Operator<? extends OperatorDesc>> childOperators = op
         .getChildOperators();

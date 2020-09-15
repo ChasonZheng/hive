@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
@@ -301,9 +302,9 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       try {
         FileStatus file = files[i];
         i++;
-        return ReplChangeManager.encodeFileUri(file.getPath().toString(),
+        return ReplChangeManager.getInstance(conf).encodeFileUri(file.getPath().toString(),
             ReplChangeManager.checksumFor(file.getPath(), fs), null);
-      } catch (IOException e) {
+      } catch (IOException | MetaException e) {
         throw new RuntimeException(e);
       }
     }
@@ -520,9 +521,10 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     public String next() {
       String result;
       try {
-        result = ReplChangeManager.encodeFileUri(files.get(i), (chksums != null && !chksums.isEmpty()) ? chksums.get(i) : null,
+        result = ReplChangeManager.getInstance(conf).
+                encodeFileUri(files.get(i), (chksums != null && !chksums.isEmpty()) ? chksums.get(i) : null,
                 subDirs != null ? subDirs.get(i) : null);
-      } catch (IOException e) {
+      } catch (IOException | MetaException e) {
         // File operations failed
         LOG.error("Encoding file URI failed with error " + e.getMessage());
         throw new RuntimeException(e.getMessage());
@@ -553,6 +555,9 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
 
   @Override
   public void onOpenTxn(OpenTxnEvent openTxnEvent, Connection dbConn, SQLGenerator sqlGenerator) throws MetaException {
+    if (openTxnEvent.getTxnType() == TxnType.READ_ONLY) {
+      return;
+    }
     int lastTxnIdx = openTxnEvent.getTxnIds().size() - 1;
     OpenTxnMessage msg =
         MessageBuilder.getInstance().buildOpenTxnMessage(openTxnEvent.getTxnIds().get(0),
@@ -571,6 +576,9 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   @Override
   public void onCommitTxn(CommitTxnEvent commitTxnEvent, Connection dbConn, SQLGenerator sqlGenerator)
           throws MetaException {
+    if (commitTxnEvent.getTxnType() == TxnType.READ_ONLY) {
+      return;
+    }
     CommitTxnMessage msg =
         MessageBuilder.getInstance().buildCommitTxnMessage(commitTxnEvent.getTxnId());
 
@@ -588,6 +596,9 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   @Override
   public void onAbortTxn(AbortTxnEvent abortTxnEvent, Connection dbConn, SQLGenerator sqlGenerator)
           throws MetaException {
+    if (abortTxnEvent.getTxnType() == TxnType.READ_ONLY) {
+      return;
+    }
     AbortTxnMessage msg =
         MessageBuilder.getInstance().buildAbortTxnMessage(abortTxnEvent.getTxnId());
     NotificationEvent event =

@@ -50,7 +50,6 @@ import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.server.CalciteServerStatement;
-import org.apache.calcite.sql.SemiJoinType;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
@@ -506,7 +505,7 @@ public class HiveSubQRemoveRelBuilder {
    * {@code e AND TRUE} becomes {@code e};
    * {@code e AND e2 AND NOT e} becomes {@code e2}. */
   public RexNode and(Iterable<? extends RexNode> operands) {
-    return RexUtil.simplifyAnds(cluster.getRexBuilder(), operands);
+    return RexUtil.composeConjunction(cluster.getRexBuilder(), operands);
   }
 
   /** Creates an OR. */
@@ -757,13 +756,13 @@ public class HiveSubQRemoveRelBuilder {
    * and optimized in a similar way to the {@link #and} method.
    * If the result is TRUE no filter is created. */
   public HiveSubQRemoveRelBuilder filter(Iterable<? extends RexNode> predicates) {
-    final RexNode x = RexUtil.simplifyAnds(cluster.getRexBuilder(), predicates, true);
+    final RexNode x = RexUtil.composeConjunction(cluster.getRexBuilder(), predicates);
     if (x.isAlwaysFalse()) {
       return empty();
     }
     if (!x.isAlwaysTrue()) {
       final Frame frame = stack.pop();
-      final RelNode filter = filterFactory.createFilter(frame.rel, x);
+      final RelNode filter = filterFactory.createFilter(frame.rel, x, ImmutableSet.of());
       stack.push(new Frame(filter, frame.right));
     }
     return this;
@@ -1113,7 +1112,8 @@ public class HiveSubQRemoveRelBuilder {
   }
 
   public HiveSubQRemoveRelBuilder join(JoinRelType joinType, RexNode condition,
-                                       Set<CorrelationId> variablesSet, boolean createSemiJoin) {
+                                       Set<CorrelationId> variablesSet, JoinRelType semiJoinType) {
+    assert semiJoinType == JoinRelType.SEMI || semiJoinType == JoinRelType.ANTI || semiJoinType == null;
     Frame right = stack.pop();
     final Frame left = stack.pop();
     final RelNode join;
@@ -1139,13 +1139,12 @@ public class HiveSubQRemoveRelBuilder {
       default:
         postCondition = condition;
       }
-      if(createSemiJoin) {
+      if(semiJoinType != null) {
         join = correlateFactory.createCorrelate(left.rel, right.rel, id,
-            requiredColumns, SemiJoinType.SEMI);
+                requiredColumns, semiJoinType);
       } else {
         join = correlateFactory.createCorrelate(left.rel, right.rel, id,
-            requiredColumns, SemiJoinType.of(joinType));
-
+                requiredColumns, joinType);
       }
     } else {
       join = joinFactory.createJoin(left.rel, right.rel, condition,
@@ -1163,7 +1162,7 @@ public class HiveSubQRemoveRelBuilder {
    * variables. */
   public HiveSubQRemoveRelBuilder join(JoinRelType joinType, RexNode condition,
                                        Set<CorrelationId> variablesSet) {
-    return join(joinType, condition, variablesSet, false);
+    return join(joinType, condition, variablesSet, null);
   }
 
   /** Creates a {@link org.apache.calcite.rel.core.Join} using USING syntax.

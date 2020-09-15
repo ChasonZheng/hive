@@ -50,7 +50,7 @@ public final class SemanticAnalyzerFactory {
     }
     return sem;
   }
-  
+
   private static BaseSemanticAnalyzer getInternal(QueryState queryState, ASTNode tree)
       throws SemanticException {
     if (tree.getToken() == null) {
@@ -59,7 +59,7 @@ public final class SemanticAnalyzerFactory {
       HiveOperation opType = HiveOperation.operationForToken(tree.getType());
       queryState.setCommandType(opType);
 
-      if (DDLSemanticAnalyzerFactory.handles(tree.getType())) {
+      if (DDLSemanticAnalyzerFactory.handles(tree)) {
         return DDLSemanticAnalyzerFactory.getAnalyzer(tree, queryState);
       }
 
@@ -83,79 +83,13 @@ public final class SemanticAnalyzerFactory {
         return new ReplicationSemanticAnalyzer(queryState);
       case HiveParser.TOK_REPL_STATUS:
         return new ReplicationSemanticAnalyzer(queryState);
-      case HiveParser.TOK_ALTERTABLE: {
-        Tree child = tree.getChild(1);
-        queryState.setCommandType(HiveOperation.operationForToken(child.getType()));
-        return new DDLSemanticAnalyzer(queryState);
-      }
       case HiveParser.TOK_ALTERVIEW: {
         Tree child = tree.getChild(1);
-        switch (child.getType()) {
-        case HiveParser.TOK_ALTERVIEW_PROPERTIES:
-        case HiveParser.TOK_ALTERVIEW_DROPPROPERTIES:
-        case HiveParser.TOK_ALTERVIEW_ADDPARTS:
-        case HiveParser.TOK_ALTERVIEW_DROPPARTS:
-        case HiveParser.TOK_ALTERVIEW_RENAME:
-          opType = HiveOperation.operationForToken(child.getType());
-          queryState.setCommandType(opType);
-          return new DDLSemanticAnalyzer(queryState);
-        }
         // TOK_ALTERVIEW_AS
         assert child.getType() == HiveParser.TOK_QUERY;
         queryState.setCommandType(HiveOperation.ALTERVIEW_AS);
         return new SemanticAnalyzer(queryState);
       }
-      case HiveParser.TOK_ALTER_MATERIALIZED_VIEW: {
-        Tree child = tree.getChild(1);
-        switch (child.getType()) {
-        case HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REWRITE:
-          opType = HiveOperation.operationForToken(child.getType());
-          queryState.setCommandType(opType);
-          return new DDLSemanticAnalyzer(queryState);
-        case HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REBUILD:
-          opType = HiveOperation.operationForToken(child.getType());
-          queryState.setCommandType(opType);
-          return new MaterializedViewRebuildSemanticAnalyzer(queryState);
-        }
-        // Operation not recognized, set to null and let upper level handle this case
-        queryState.setCommandType(null);
-        return new DDLSemanticAnalyzer(queryState);
-      }
-      case HiveParser.TOK_DROPTABLE:
-      case HiveParser.TOK_DROPVIEW:
-      case HiveParser.TOK_DROP_MATERIALIZED_VIEW:
-      case HiveParser.TOK_DESCTABLE:
-      case HiveParser.TOK_MSCK:
-      case HiveParser.TOK_SHOWTABLES:
-      case HiveParser.TOK_SHOWCOLUMNS:
-      case HiveParser.TOK_SHOW_TABLESTATUS:
-      case HiveParser.TOK_SHOW_TBLPROPERTIES:
-      case HiveParser.TOK_SHOW_CREATETABLE:
-      case HiveParser.TOK_SHOWPARTITIONS:
-      case HiveParser.TOK_SHOWLOCKS:
-      case HiveParser.TOK_SHOWDBLOCKS:
-      case HiveParser.TOK_SHOWCONF:
-      case HiveParser.TOK_SHOWVIEWS:
-      case HiveParser.TOK_SHOWMATERIALIZEDVIEWS:
-      case HiveParser.TOK_LOCKTABLE:
-      case HiveParser.TOK_UNLOCKTABLE:
-      case HiveParser.TOK_TRUNCATETABLE:
-      case HiveParser.TOK_CACHE_METADATA:
-      case HiveParser.TOK_CREATE_RP:
-      case HiveParser.TOK_SHOW_RP:
-      case HiveParser.TOK_ALTER_RP:
-      case HiveParser.TOK_DROP_RP:
-      case HiveParser.TOK_CREATE_TRIGGER:
-      case HiveParser.TOK_ALTER_TRIGGER:
-      case HiveParser.TOK_DROP_TRIGGER:
-      case HiveParser.TOK_CREATE_POOL:
-      case HiveParser.TOK_ALTER_POOL:
-      case HiveParser.TOK_DROP_POOL:
-      case HiveParser.TOK_CREATE_MAPPING:
-      case HiveParser.TOK_ALTER_MAPPING:
-      case HiveParser.TOK_DROP_MAPPING:
-        return new DDLSemanticAnalyzer(queryState);
-
       case HiveParser.TOK_ANALYZE:
         return new ColumnStatsSemanticAnalyzer(queryState);
 
@@ -166,6 +100,14 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_MERGE:
         return new MergeSemanticAnalyzer(queryState);
 
+      case HiveParser.TOK_ALTER_SCHEDULED_QUERY:
+      case HiveParser.TOK_CREATE_SCHEDULED_QUERY:
+      case HiveParser.TOK_DROP_SCHEDULED_QUERY:
+        return new ScheduledQueryAnalyzer(queryState);
+      case HiveParser.TOK_EXECUTE:
+        return new ExecuteStatementAnalyzer(queryState);
+      case HiveParser.TOK_PREPARE:
+        return new PrepareStatementAnalyzer(queryState);
       case HiveParser.TOK_START_TRANSACTION:
       case HiveParser.TOK_COMMIT:
       case HiveParser.TOK_ROLLBACK:

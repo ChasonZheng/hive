@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -228,7 +227,7 @@ public class HookRunner {
   }
 
   public void runPostAnalyzeHooks(HiveSemanticAnalyzerHookContext hookCtx,
-      List<Task<? extends Serializable>> allRootTasks) throws HiveException {
+      List<Task<?>> allRootTasks) throws HiveException {
     initialize();
     try {
       for (HiveSemanticAnalyzerHook hook : saHooks) {
@@ -292,9 +291,9 @@ public class HookRunner {
       PerfLogger perfLogger = SessionState.getPerfLogger();
 
       for (ExecuteWithHookContext hook : hooks) {
-        perfLogger.PerfLogBegin(CLASS_NAME, prefix + hook.getClass().getName());
+        perfLogger.perfLogBegin(CLASS_NAME, prefix + hook.getClass().getName());
         hook.run(hookContext);
-        perfLogger.PerfLogEnd(CLASS_NAME, prefix + hook.getClass().getName());
+        perfLogger.perfLogEnd(CLASS_NAME, prefix + hook.getClass().getName());
       }
     } catch (HiveException e) {
       throw e;

@@ -45,7 +45,7 @@ import java.util.regex.Pattern;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -62,7 +62,7 @@ import org.junit.Test;
  * TestBeeLineWithArgs - executes tests of the command-line arguments to BeeLine
  *
  */
-public class TestBeeLineWithArgs {
+  public class TestBeeLineWithArgs {
   private enum OutStream {
     ERR, OUT
   }
@@ -176,9 +176,9 @@ public class TestBeeLineWithArgs {
     }
     String[] args = argList.toArray(new String[argList.size()]);
     beeLine.begin(args, inputStream);
-    String output = os.toString("UTF8");
-
     beeLine.close();
+    beelineOutputStream.close();
+    String output = os.toString("UTF8");
     return output;
   }
 
@@ -1155,6 +1155,17 @@ public class TestBeeLineWithArgs {
     testScriptFile(SCRIPT_TEXT, argList, EXPECTED_PATTERN, true);
   }
 
+  @Test
+  @Ignore("HIVE-23398")
+  public void testRowsAffected() throws Throwable {
+    final String SCRIPT_TEXT = "drop table if exists new_table;\n create table new_table(foo int);\n "
+      + "insert into new_table values (1);\n";
+    final String EXPECTED_PATTERN = "1 row affected";
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    testScriptFile(SCRIPT_TEXT, argList, OutStream.ERR,
+        Collections.singletonList(new Tuple<>(EXPECTED_PATTERN, true)),
+        Arrays.asList(Modes.SCRIPT));
+  }
   /**
    * Test 'describe extended' on tables that have special white space characters in the row format.
    */

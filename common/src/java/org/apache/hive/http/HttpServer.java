@@ -24,6 +24,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.KeyStore;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -48,7 +49,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.google.common.base.Preconditions;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.util.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
@@ -169,6 +170,7 @@ public class HttpServer {
     private XFrameOption xFrameOption = XFrameOption.SAMEORIGIN;
     private final List<Pair<String, Class<? extends HttpServlet>>> servlets =
         new LinkedList<Pair<String, Class<? extends HttpServlet>>>();
+    private boolean disableDirListing = false;
 
     public Builder(String name) {
       Preconditions.checkArgument(name != null && !name.isEmpty(), "Name must be specified");
@@ -303,6 +305,10 @@ public class HttpServer {
     public Builder setXFrameOption(String option) {
       this.xFrameOption = XFrameOption.getEnum(option);
       return this;
+    }
+
+    public void setDisableDirListing(boolean disableDirListing) {
+      this.disableDirListing = disableDirListing;
     }
   }
 
@@ -513,6 +519,7 @@ public class HttpServer {
     } else {
       SslContextFactory sslContextFactory = new SslContextFactory();
       sslContextFactory.setKeyStorePath(b.keyStorePath);
+      sslContextFactory.setKeyStoreType(KeyStore.getDefaultType());
       Set<String> excludedSSLProtocols = Sets.newHashSet(
         Splitter.on(",").trimResults().omitEmptyStrings().split(
           Strings.nullToEmpty(b.conf.getVar(ConfVars.HIVE_SSL_PROTOCOL_BLACKLIST))));
@@ -577,8 +584,12 @@ public class HttpServer {
     }
 
     Map<String, String> xFrameParams = setHeaders();
-    if(b.xFrameEnabled){
+    if (b.xFrameEnabled) {
       setupXframeFilter(b,xFrameParams);
+    }
+
+    if (b.disableDirListing) {
+      disableDirectoryListingOnServlet(webAppContext);
     }
 
     initializeWebServer(b, threadPool.getMaxThreads());
@@ -611,7 +622,7 @@ public class HttpServer {
     webServer.setHandler(contexts);
 
 
-    if(b.usePAM){
+    if (b.usePAM) {
       setupPam(b, contexts);
     }
 
@@ -646,6 +657,7 @@ public class HttpServer {
     staticCtx.setResourceBase(appDir + "/static");
     staticCtx.addServlet(DefaultServlet.class, "/*");
     staticCtx.setDisplayName("static");
+    disableDirectoryListingOnServlet(staticCtx);
 
     String logDir = getLogDir(b.conf);
     if (logDir != null) {
@@ -747,6 +759,11 @@ public class HttpServer {
       holder.setName(name);
     }
     webAppContext.addServlet(holder, pathSpec);
+  }
+
+
+  private static void disableDirectoryListingOnServlet(ServletContextHandler contextHandler) {
+    contextHandler.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", "false");
   }
 
   /**

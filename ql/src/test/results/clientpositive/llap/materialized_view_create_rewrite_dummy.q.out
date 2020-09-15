@@ -60,7 +60,7 @@ numFiles	1
 numFilesErasureCoded	0
 numRows	2
 rawDataSize	408
-totalSize	467
+totalSize	468
 #### A masked pattern was here ####
 PREHOOK: query: create materialized view if not exists cmv_mat_view2
 as select a, c from cmv_basetable_n0 where a = 3
@@ -94,7 +94,7 @@ numFiles	1
 numFilesErasureCoded	0
 numRows	2
 rawDataSize	232
-totalSize	332
+totalSize	334
 #### A masked pattern was here ####
 PREHOOK: query: explain
 select a, c from cmv_basetable_n0 where a = 3
@@ -147,12 +147,18 @@ POSTHOOK: Input: default@cmv_mat_view2
 POSTHOOK: Output: default@cmv_mat_view2
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-0
     Alter Materialized View Rewrite
       name: default.cmv_mat_view2
       disable: true
+
+  Stage: Stage-1
+    Materialized View Update
+      name: default.cmv_mat_view2
+      disable rewrite: true
 
 PREHOOK: query: alter materialized view cmv_mat_view2 disable rewrite
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
@@ -207,6 +213,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: decimal(10,2))
@@ -226,6 +233,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: decimal(10,2))
@@ -291,12 +299,18 @@ POSTHOOK: Input: default@cmv_mat_view2
 POSTHOOK: Output: default@cmv_mat_view2
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-0
     Alter Materialized View Rewrite
       name: default.cmv_mat_view2
       enable: true
+
+  Stage: Stage-1
+    Materialized View Update
+      name: default.cmv_mat_view2
+      retrieve and include: true
 
 PREHOOK: query: alter materialized view cmv_mat_view2 enable rewrite
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
@@ -353,6 +367,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: decimal(10,2))
@@ -364,6 +379,7 @@ STAGE PLANS:
                   alias: default.cmv_mat_view2
                   Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: a (type: int), c (type: decimal(10,2))
@@ -472,6 +488,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: decimal(10,2))
@@ -491,6 +508,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: decimal(10,2))

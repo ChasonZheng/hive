@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.parse;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.parse.WarehouseInstance;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.junit.Assert;
 
@@ -28,10 +27,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
 import java.util.Set;
+import java.util.HashSet;
 
 /**
  * ReplicationTestUtils - static helper functions for replication test
@@ -265,12 +265,12 @@ public class ReplicationTestUtils {
                                                               String primaryDbName, String replicatedDbName,
                                                               List<String> selectStmtList,
                                                   List<String[]> expectedValues, String lastReplId) throws Throwable {
-    WarehouseInstance.Tuple incrementalDump = primary.dump(primaryDbName, lastReplId);
-    replica.loadWithoutExplain(replicatedDbName, incrementalDump.dumpLocation)
+    WarehouseInstance.Tuple incrementalDump = primary.dump(primaryDbName);
+    replica.loadWithoutExplain(replicatedDbName, primaryDbName)
             .run("REPL STATUS " + replicatedDbName).verifyResult(incrementalDump.lastReplicationId);
     verifyResultsInReplica(replica, replicatedDbName, selectStmtList, expectedValues);
 
-    replica.loadWithoutExplain(replicatedDbName, incrementalDump.dumpLocation)
+    replica.loadWithoutExplain(replicatedDbName, primaryDbName)
             .run("REPL STATUS " + replicatedDbName).verifyResult(incrementalDump.lastReplicationId);
     verifyResultsInReplica(replica, replicatedDbName, selectStmtList, expectedValues);
     return incrementalDump;
@@ -502,25 +502,30 @@ public class ReplicationTestUtils {
                 "creation", "creation", "merge_update", "merge_insert", "merge_insert"});
   }
 
-  public static List<String> externalTableBasePathWithClause(String replExternalBase, WarehouseInstance replica)
-          throws IOException, SemanticException {
-    Path externalTableLocation = new Path(replExternalBase);
-    DistributedFileSystem fileSystem = replica.miniDFSCluster.getFileSystem();
-    externalTableLocation = PathBuilder.fullyQualifiedHDFSUri(externalTableLocation, fileSystem);
-    fileSystem.mkdirs(externalTableLocation);
-
-    // this is required since the same filesystem is used in both source and target
-    return Arrays.asList(
-            "'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname + "'='"
-                    + externalTableLocation.toString() + "'",
-            "'distcp.options.pugpb'=''"
-    );
+  public static List<String> includeExternalTableClause(boolean enable) {
+    List<String> withClause = new ArrayList<>();
+    withClause.add("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='" + enable + "'");
+    withClause.add("'distcp.options.pugpb'=''");
+    return withClause;
   }
 
-  public static void assertExternalFileInfo(WarehouseInstance primary,
-                                      List<String> expected,
-                                      Path externalTableInfoFile) throws IOException {
-    DistributedFileSystem fileSystem = primary.miniDFSCluster.getFileSystem();
+  public static List<String> externalTableWithClause(List<String> externalTableBasePathWithClause, Boolean bootstrap,
+                                                     Boolean includeExtTbl) {
+    List<String> withClause = new ArrayList<>(externalTableBasePathWithClause);
+    if (bootstrap != null) {
+      withClause.add("'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES + "'='" + Boolean.toString(bootstrap)
+              + "'");
+    }
+    if (includeExtTbl != null) {
+      withClause.add("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES + "'='" + Boolean.toString(includeExtTbl)
+              + "'");
+    }
+    return withClause;
+  }
+
+  public static void assertExternalFileInfo(WarehouseInstance warehouseInstance,
+                                      List<String> expected, Path externalTableInfoFile) throws IOException {
+    DistributedFileSystem fileSystem = warehouseInstance.miniDFSCluster.getFileSystem();
     Assert.assertTrue(fileSystem.exists(externalTableInfoFile));
     InputStream inputStream = fileSystem.open(externalTableInfoFile);
     BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));

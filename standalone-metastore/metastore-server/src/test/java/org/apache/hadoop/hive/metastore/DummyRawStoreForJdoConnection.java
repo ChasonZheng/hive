@@ -69,12 +69,20 @@ import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.RuntimeStat;
+import org.apache.hadoop.hive.metastore.api.ReplicationMetricList;
+import org.apache.hadoop.hive.metastore.api.GetReplicationMetricsRequest;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequest;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollRequest;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollResponse;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryProgressInfo;
 import org.apache.hadoop.hive.metastore.api.SchemaVersion;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -352,6 +360,13 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   @Override
   public List<String> listPartitionNames(String catName, String db_name, String tbl_name, short max_parts)
       throws MetaException {
+
+    return Collections.emptyList();
+  }
+
+  @Override
+  public List<String> listPartitionNames(String catName, String dbName, String tblName, String defaultPartName,
+      byte[] exprBytes, String order, short maxParts) throws MetaException, NoSuchObjectException {
 
     return Collections.emptyList();
   }
@@ -1277,4 +1292,58 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   public List<WriteEventInfo> getAllWriteEventInfo(long txnId, String dbName, String tableName) throws MetaException {
     return null;
   }
+
+  @Override
+  public List<String> isPartOfMaterializedView(String catName, String dbName, String tblName) {
+    throw new RuntimeException("unimplemented");
+  }
+
+  @Override
+  public ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request) {
+    throw new RuntimeException("unimplemented");
+  }
+
+  @Override
+  public void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request) {
+  }
+
+  @Override
+  public void scheduledQueryProgress(ScheduledQueryProgressInfo info) {
+  }
+
+  @Override
+  public void addReplicationMetrics(ReplicationMetricList replicationMetricList) {
+    throw new RuntimeException("unimplemented");
+  }
+
+  @Override
+  public ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest replicationMetricsRequest) {
+    throw new RuntimeException("unimplemented");
+  }
+
+  @Override
+  public int deleteReplicationMetrics(int maxRetainSecs) {
+    throw new RuntimeException("unimplemented");
+  }
+
+  @Override
+  public ScheduledQuery getScheduledQuery(ScheduledQueryKey scheduleKey) {
+    throw new RuntimeException("unimplemented");
+  }
+
+  @Override
+  public int deleteScheduledExecutions(int maxRetainSecs) {
+    throw new RuntimeException("unimplemented");
+  }
+
+  @Override
+  public int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException{
+    throw new RuntimeException("unimplemented");
+  }
+
+  @Override
+  public void deleteAllPartitionColumnStatistics(TableName tableName, String w) {
+    throw new RuntimeException("unimplemented");
+  }
+
 }

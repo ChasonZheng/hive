@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.JoinRelType;
+import org.apache.calcite.rex.RexDynamicParam;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.DateString;
@@ -155,17 +156,15 @@ public class ASTBuilder {
     return b.node();
   }
 
-  public static ASTNode join(ASTNode left, ASTNode right, JoinRelType joinType, ASTNode cond,
-      boolean semiJoin) {
+  public static ASTNode join(ASTNode left, ASTNode right, JoinRelType joinType, ASTNode cond) {
     ASTBuilder b = null;
 
     switch (joinType) {
+    case SEMI:
+      b = ASTBuilder.construct(HiveParser.TOK_LEFTSEMIJOIN, "TOK_LEFTSEMIJOIN");
+      break;
     case INNER:
-      if (semiJoin) {
-        b = ASTBuilder.construct(HiveParser.TOK_LEFTSEMIJOIN, "TOK_LEFTSEMIJOIN");
-      } else {
-        b = ASTBuilder.construct(HiveParser.TOK_JOIN, "TOK_JOIN");
-      }
+      b = ASTBuilder.construct(HiveParser.TOK_JOIN, "TOK_JOIN");
       break;
     case LEFT:
       b = ASTBuilder.construct(HiveParser.TOK_LEFTOUTERJOIN, "TOK_LEFTOUTERJOIN");
@@ -175,6 +174,9 @@ public class ASTBuilder {
       break;
     case FULL:
       b = ASTBuilder.construct(HiveParser.TOK_FULLOUTERJOIN, "TOK_FULLOUTERJOIN");
+      break;
+    case ANTI:
+      b = ASTBuilder.construct(HiveParser.TOK_LEFTANTISEMIJOIN, "TOK_LEFTANTISEMIJOIN");
       break;
     }
 
@@ -245,6 +247,7 @@ public class ASTBuilder {
     case INTERVAL_SECOND:
     case INTERVAL_YEAR:
     case INTERVAL_YEAR_MONTH:
+    case ROW:
       if (literal.getValue() == null) {
         return ASTBuilder.construct(HiveParser.TOK_NULL, "TOK_NULL").node();
       }
@@ -366,13 +369,20 @@ public class ASTBuilder {
       type = HiveParser.TOK_NULL;
       break;
 
-    //binary type should not be seen.
+    //binary, ROW type should not be seen.
     case BINARY:
+    case ROW:
     default:
       throw new RuntimeException("Unsupported Type: " + sqlType);
     }
 
     return (ASTNode) ParseDriver.adaptor.create(type, String.valueOf(val));
+  }
+
+  public static ASTNode dynamicParam(RexDynamicParam param) {
+    ASTNode node = (ASTNode)ParseDriver.adaptor.create(HiveParser.TOK_PARAMETER,
+        Integer.toString(param.getIndex()));
+    return node;
   }
 
   ASTNode curr;

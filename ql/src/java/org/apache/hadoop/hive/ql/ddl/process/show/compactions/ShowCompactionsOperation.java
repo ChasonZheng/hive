@@ -81,11 +81,15 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
     os.write(Utilities.tabCode);
     os.writeBytes("Worker");
     os.write(Utilities.tabCode);
+    os.writeBytes("Enqueue Time");
+    os.write(Utilities.tabCode);
     os.writeBytes("Start Time");
     os.write(Utilities.tabCode);
     os.writeBytes("Duration(ms)");
     os.write(Utilities.tabCode);
     os.writeBytes("HadoopJobId");
+    os.write(Utilities.tabCode);
+    os.writeBytes("Error message");
     os.write(Utilities.newLineCode);
   }
 
@@ -110,11 +114,16 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
     os.write(Utilities.tabCode);
     os.writeBytes(wid == null ? NO_VAL : wid.split("-")[1]);
     os.write(Utilities.tabCode);
+    os.writeBytes(e.isSetEnqueueTime() ? Long.toString(e.getEnqueueTime()) : NO_VAL);
+    os.write(Utilities.tabCode);
     os.writeBytes(e.isSetStart() ? Long.toString(e.getStart()) : NO_VAL);
     os.write(Utilities.tabCode);
     os.writeBytes(e.isSetEndTime() ? Long.toString(e.getEndTime() - e.getStart()) : NO_VAL);
     os.write(Utilities.tabCode);
     os.writeBytes(e.isSetHadoopJobId() ?  e.getHadoopJobId() : NO_VAL);
+    os.write(Utilities.tabCode);
+    String error = e.getErrorMessage();
+    os.writeBytes(error == null ? NO_VAL : error);
     os.write(Utilities.newLineCode);
   }
 }

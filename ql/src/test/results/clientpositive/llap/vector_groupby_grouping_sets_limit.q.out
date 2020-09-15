@@ -64,30 +64,31 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:a:string, 1:b:string, 2:c:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
-                  Select Operator
-                    expressions: a (type: string), b (type: string)
-                    outputColumnNames: a, b
-                    Select Vectorization:
-                        className: VectorSelectOperator
-                        native: true
-                        projectedOutputColumnNums: [0, 1]
+                  Top N Key Operator
+                    sort order: ++
+                    keys: a (type: string), b (type: string)
+                    null sort order: zz
                     Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
-                    Top N Key Operator
-                      sort order: +++
-                      keys: a (type: string), b (type: string), 0L (type: bigint)
-                      Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
-                      top n: 10
-                      Top N Key Vectorization:
-                          className: VectorTopNKeyOperator
-                          keyExpressions: col 0:string, col 1:string, ConstantVectorExpression(val 0) -> 4:bigint
+                    top n: 10
+                    Top N Key Vectorization:
+                        className: VectorTopNKeyOperator
+                        keyExpressions: col 0:string, col 1:string
+                        native: true
+                    Select Operator
+                      expressions: a (type: string), b (type: string)
+                      outputColumnNames: a, b
+                      Select Vectorization:
+                          className: VectorSelectOperator
                           native: true
+                          projectedOutputColumnNums: [0, 1]
+                      Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         Group By Vectorization:
                             aggregators: VectorUDAFCountStar(*) -> bigint
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            keyExpressions: col 0:string, col 1:string, ConstantVectorExpression(val 0) -> 5:bigint
+                            keyExpressions: col 0:string, col 1:string, ConstantVectorExpression(val 0) -> 4:bigint
                             native: false
                             vectorProcessingMode: HASH
                             projectedOutputColumnNums: [0]
@@ -98,6 +99,7 @@ STAGE PLANS:
                         Statistics: Num rows: 12 Data size: 2232 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                          null sort order: zzz
                           sort order: +++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                           Reduce Sink Vectorization:
@@ -107,7 +109,6 @@ STAGE PLANS:
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                               valueColumns: 3:bigint
                           Statistics: Num rows: 12 Data size: 2232 Basic stats: COMPLETE Column stats: COMPLETE
-                          TopN Hash Memory Usage: 0.1
                           value expressions: _col3 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -125,13 +126,13 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: a:string, b:string, c:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint]
+                    scratchColumnTypeNames: [bigint]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: zza
+                reduceColumnNullOrder: zzz
                 reduceColumnSortOrder: +++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -167,6 +168,7 @@ STAGE PLANS:
                   Statistics: Num rows: 12 Data size: 2136 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: string)
+                    null sort order: zz
                     sort order: ++
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
@@ -175,7 +177,6 @@ STAGE PLANS:
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         valueColumns: 2:bigint
                     Statistics: Num rows: 12 Data size: 2136 Basic stats: COMPLETE Column stats: COMPLETE
-                    TopN Hash Memory Usage: 0.1
                     value expressions: _col2 (type: bigint)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -279,30 +280,31 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:a:string, 1:b:string, 2:c:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
-                  Select Operator
-                    expressions: a (type: string), b (type: string)
-                    outputColumnNames: a, b
-                    Select Vectorization:
-                        className: VectorSelectOperator
-                        native: true
-                        projectedOutputColumnNums: [0, 1]
+                  Top N Key Operator
+                    sort order: ++
+                    keys: a (type: string), b (type: string)
+                    null sort order: zz
                     Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
-                    Top N Key Operator
-                      sort order: +++
-                      keys: a (type: string), b (type: string), 0L (type: bigint)
-                      Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
-                      top n: 10
-                      Top N Key Vectorization:
-                          className: VectorTopNKeyOperator
-                          keyExpressions: col 0:string, col 1:string, ConstantVectorExpression(val 0) -> 4:bigint
+                    top n: 10
+                    Top N Key Vectorization:
+                        className: VectorTopNKeyOperator
+                        keyExpressions: col 0:string, col 1:string
+                        native: true
+                    Select Operator
+                      expressions: a (type: string), b (type: string)
+                      outputColumnNames: a, b
+                      Select Vectorization:
+                          className: VectorSelectOperator
                           native: true
+                          projectedOutputColumnNums: [0, 1]
+                      Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         Group By Vectorization:
                             aggregators: VectorUDAFCountStar(*) -> bigint
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            keyExpressions: col 0:string, col 1:string, ConstantVectorExpression(val 0) -> 5:bigint
+                            keyExpressions: col 0:string, col 1:string, ConstantVectorExpression(val 0) -> 4:bigint
                             native: false
                             vectorProcessingMode: HASH
                             projectedOutputColumnNums: [0]
@@ -313,6 +315,7 @@ STAGE PLANS:
                         Statistics: Num rows: 12 Data size: 2232 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                          null sort order: zzz
                           sort order: +++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                           Reduce Sink Vectorization:
@@ -322,7 +325,6 @@ STAGE PLANS:
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                               valueColumns: 3:bigint
                           Statistics: Num rows: 12 Data size: 2232 Basic stats: COMPLETE Column stats: COMPLETE
-                          TopN Hash Memory Usage: 0.1
                           value expressions: _col3 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -340,13 +342,13 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: a:string, b:string, c:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint]
+                    scratchColumnTypeNames: [bigint]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: zza
+                reduceColumnNullOrder: zzz
                 reduceColumnSortOrder: +++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -382,6 +384,7 @@ STAGE PLANS:
                   Statistics: Num rows: 12 Data size: 2136 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: string)
+                    null sort order: zz
                     sort order: ++
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
@@ -390,7 +393,6 @@ STAGE PLANS:
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         valueColumns: 2:bigint
                     Statistics: Num rows: 12 Data size: 2136 Basic stats: COMPLETE Column stats: COMPLETE
-                    TopN Hash Memory Usage: 0.1
                     value expressions: _col2 (type: bigint)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -494,30 +496,31 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:a:string, 1:b:string, 2:c:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
-                  Select Operator
-                    expressions: a (type: string), b (type: string)
-                    outputColumnNames: a, b
-                    Select Vectorization:
-                        className: VectorSelectOperator
-                        native: true
-                        projectedOutputColumnNums: [0, 1]
+                  Top N Key Operator
+                    sort order: ++
+                    keys: a (type: string), b (type: string)
+                    null sort order: zz
                     Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
-                    Top N Key Operator
-                      sort order: +++
-                      keys: a (type: string), b (type: string), 0L (type: bigint)
-                      Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
-                      top n: 10
-                      Top N Key Vectorization:
-                          className: VectorTopNKeyOperator
-                          keyExpressions: col 0:string, col 1:string, ConstantVectorExpression(val 0) -> 4:bigint
+                    top n: 10
+                    Top N Key Vectorization:
+                        className: VectorTopNKeyOperator
+                        keyExpressions: col 0:string, col 1:string
+                        native: true
+                    Select Operator
+                      expressions: a (type: string), b (type: string)
+                      outputColumnNames: a, b
+                      Select Vectorization:
+                          className: VectorSelectOperator
                           native: true
+                          projectedOutputColumnNums: [0, 1]
+                      Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         Group By Vectorization:
                             aggregators: VectorUDAFCountStar(*) -> bigint
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            keyExpressions: col 0:string, col 1:string, ConstantVectorExpression(val 0) -> 5:bigint
+                            keyExpressions: col 0:string, col 1:string, ConstantVectorExpression(val 0) -> 4:bigint
                             native: false
                             vectorProcessingMode: HASH
                             projectedOutputColumnNums: [0]
@@ -528,6 +531,7 @@ STAGE PLANS:
                         Statistics: Num rows: 6 Data size: 1116 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                          null sort order: zzz
                           sort order: +++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                           Reduce Sink Vectorization:
@@ -537,7 +541,6 @@ STAGE PLANS:
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                               valueColumns: 3:bigint
                           Statistics: Num rows: 6 Data size: 1116 Basic stats: COMPLETE Column stats: COMPLETE
-                          TopN Hash Memory Usage: 0.1
                           value expressions: _col3 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -555,13 +558,13 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: a:string, b:string, c:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint]
+                    scratchColumnTypeNames: [bigint]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: zza
+                reduceColumnNullOrder: zzz
                 reduceColumnSortOrder: +++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -597,6 +600,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 1068 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: string)
+                    null sort order: zz
                     sort order: ++
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
@@ -605,7 +609,6 @@ STAGE PLANS:
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         valueColumns: 2:bigint
                     Statistics: Num rows: 6 Data size: 1068 Basic stats: COMPLETE Column stats: COMPLETE
-                    TopN Hash Memory Usage: 0.1
                     value expressions: _col2 (type: bigint)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -709,28 +712,29 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:a:string, 1:b:string, 2:c:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
-                  Select Operator
-                    expressions: a (type: string), b (type: string), c (type: string)
-                    outputColumnNames: a, b, c
-                    Select Vectorization:
-                        className: VectorSelectOperator
-                        native: true
-                        projectedOutputColumnNums: [0, 1, 2]
+                  Top N Key Operator
+                    sort order: +++
+                    keys: a (type: string), b (type: string), c (type: string)
+                    null sort order: zzz
                     Statistics: Num rows: 6 Data size: 1530 Basic stats: COMPLETE Column stats: COMPLETE
-                    Top N Key Operator
-                      sort order: ++++
-                      keys: a (type: string), b (type: string), c (type: string), 0L (type: bigint)
-                      Statistics: Num rows: 6 Data size: 1530 Basic stats: COMPLETE Column stats: COMPLETE
-                      top n: 10
-                      Top N Key Vectorization:
-                          className: VectorTopNKeyOperator
-                          keyExpressions: col 0:string, col 1:string, col 2:string, ConstantVectorExpression(val 0) -> 4:bigint
+                    top n: 10
+                    Top N Key Vectorization:
+                        className: VectorTopNKeyOperator
+                        keyExpressions: col 0:string, col 1:string, col 2:string
+                        native: true
+                    Select Operator
+                      expressions: a (type: string), b (type: string), c (type: string)
+                      outputColumnNames: a, b, c
+                      Select Vectorization:
+                          className: VectorSelectOperator
                           native: true
+                          projectedOutputColumnNums: [0, 1, 2]
+                      Statistics: Num rows: 6 Data size: 1530 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            keyExpressions: col 0:string, col 1:string, col 2:string, ConstantVectorExpression(val 0) -> 5:bigint
+                            keyExpressions: col 0:string, col 1:string, col 2:string, ConstantVectorExpression(val 0) -> 4:bigint
                             native: false
                             vectorProcessingMode: HASH
                             projectedOutputColumnNums: []
@@ -741,6 +745,7 @@ STAGE PLANS:
                         Statistics: Num rows: 9 Data size: 2367 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: bigint)
+                          null sort order: zzzz
                           sort order: ++++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: bigint)
                           Reduce Sink Vectorization:
@@ -749,7 +754,6 @@ STAGE PLANS:
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           Statistics: Num rows: 9 Data size: 2367 Basic stats: COMPLETE Column stats: COMPLETE
-                          TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -766,13 +770,13 @@ STAGE PLANS:
                     includeColumns: [0, 1, 2]
                     dataColumns: a:string, b:string, c:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint]
+                    scratchColumnTypeNames: [bigint]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: zaaa
+                reduceColumnNullOrder: zzzz
                 reduceColumnSortOrder: ++++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -806,6 +810,7 @@ STAGE PLANS:
                   Statistics: Num rows: 9 Data size: 765 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
+                    null sort order: z
                     sort order: +
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
@@ -813,7 +818,6 @@ STAGE PLANS:
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     Statistics: Num rows: 9 Data size: 765 Basic stats: COMPLETE Column stats: COMPLETE
-                    TopN Hash Memory Usage: 0.1
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -916,23 +920,24 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:a:string, 1:b:string, 2:c:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
-                  Select Operator
-                    expressions: a (type: string)
-                    outputColumnNames: a
-                    Select Vectorization:
-                        className: VectorSelectOperator
-                        native: true
-                        projectedOutputColumnNums: [0]
+                  Top N Key Operator
+                    sort order: +
+                    keys: a (type: string)
+                    null sort order: z
                     Statistics: Num rows: 6 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
-                    Top N Key Operator
-                      sort order: +
-                      keys: a (type: string)
-                      Statistics: Num rows: 6 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
-                      top n: 10
-                      Top N Key Vectorization:
-                          className: VectorTopNKeyOperator
-                          keyExpressions: col 0:string
+                    top n: 10
+                    Top N Key Vectorization:
+                        className: VectorTopNKeyOperator
+                        keyExpressions: col 0:string
+                        native: true
+                    Select Operator
+                      expressions: a (type: string)
+                      outputColumnNames: a
+                      Select Vectorization:
+                          className: VectorSelectOperator
                           native: true
+                          projectedOutputColumnNums: [0]
+                      Statistics: Num rows: 6 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
@@ -948,6 +953,7 @@ STAGE PLANS:
                         Statistics: Num rows: 3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string)
+                          null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: string)
                           Reduce Sink Vectorization:
@@ -956,7 +962,6 @@ STAGE PLANS:
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           Statistics: Num rows: 3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
-                          TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -1004,6 +1009,7 @@ STAGE PLANS:
                 Statistics: Num rows: 3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
+                  null sort order: z
                   sort order: +
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkObjectHashOperator
@@ -1011,7 +1017,6 @@ STAGE PLANS:
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                   Statistics: Num rows: 3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
-                  TopN Hash Memory Usage: 0.1
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -1109,31 +1114,32 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:a:string, 1:b:string, 2:c:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
-                  Select Operator
-                    expressions: (UDFToDouble(a) + UDFToDouble(b)) (type: double)
-                    outputColumnNames: _col0
-                    Select Vectorization:
-                        className: VectorSelectOperator
-                        native: true
-                        projectedOutputColumnNums: [6]
-                        selectExpressions: DoubleColAddDoubleColumn(col 4:double, col 5:double)(children: CastStringToDouble(col 0:string) -> 4:double, CastStringToDouble(col 1:string) -> 5:double) -> 6:double
+                  Top N Key Operator
+                    sort order: +
+                    keys: (UDFToDouble(a) + UDFToDouble(b)) (type: double)
+                    null sort order: z
                     Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
-                    Top N Key Operator
-                      sort order: +
-                      keys: _col0 (type: double)
-                      Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
-                      top n: 10
-                      Top N Key Vectorization:
-                          className: VectorTopNKeyOperator
-                          keyExpressions: col 6:double
+                    top n: 10
+                    Top N Key Vectorization:
+                        className: VectorTopNKeyOperator
+                        keyExpressions: DoubleColAddDoubleColumn(col 4:double, col 5:double)(children: CastStringToDouble(col 0:string) -> 4:double, CastStringToDouble(col 1:string) -> 5:double) -> 6:double
+                        native: true
+                    Select Operator
+                      expressions: (UDFToDouble(a) + UDFToDouble(b)) (type: double)
+                      outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
                           native: true
+                          projectedOutputColumnNums: [7]
+                          selectExpressions: DoubleColAddDoubleColumn(col 4:double, col 5:double)(children: CastStringToDouble(col 0:string) -> 4:double, CastStringToDouble(col 1:string) -> 5:double) -> 7:double
+                      Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         Group By Vectorization:
                             aggregators: VectorUDAFCountStar(*) -> bigint
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            keyExpressions: col 6:double
+                            keyExpressions: col 7:double
                             native: false
                             vectorProcessingMode: HASH
                             projectedOutputColumnNums: [0]
@@ -1144,6 +1150,7 @@ STAGE PLANS:
                         Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: double)
+                          null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: double)
                           Reduce Sink Vectorization:
@@ -1153,7 +1160,6 @@ STAGE PLANS:
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                               valueColumns: 1:bigint
                           Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
-                          TopN Hash Memory Usage: 0.1
                           value expressions: _col1 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1171,7 +1177,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: a:string, b:string, c:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [double, double, double]
+                    scratchColumnTypeNames: [double, double, double, double]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -1204,6 +1210,7 @@ STAGE PLANS:
                 Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: double)
+                  null sort order: z
                   sort order: +
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkObjectHashOperator
@@ -1212,7 +1219,6 @@ STAGE PLANS:
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       valueColumns: 1:bigint
                   Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
-                  TopN Hash Memory Usage: 0.1
                   value expressions: _col1 (type: bigint)
         Reducer 3 
             Execution mode: vectorized, llap

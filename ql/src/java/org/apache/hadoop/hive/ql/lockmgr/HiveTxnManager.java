@@ -20,8 +20,10 @@ package org.apache.hadoop.hive.ql.lockmgr;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverState;
 import org.apache.hadoop.hive.ql.ddl.database.lock.LockDatabaseDesc;
@@ -49,6 +51,16 @@ public interface HiveTxnManager {
    * @throws LockException if a transaction is already open.
    */
   long openTxn(Context ctx, String user) throws LockException;
+
+ /**
+  * Open a new transaction.
+  * @param ctx Context for this query
+  * @param user Hive user who is opening this transaction.
+  * @param txnType transaction type.
+  * @return The new transaction id
+  * @throws LockException if a transaction is already open.
+  */
+  long openTxn(Context ctx, String user, TxnType txnType) throws LockException;
 
   /**
    * Open a new transaction in target cluster.
@@ -161,6 +173,8 @@ public interface HiveTxnManager {
    */
   void heartbeat() throws LockException;
 
+  GetOpenTxnsResponse getOpenTxns() throws LockException;
+
   /**
    * Get the transactions that are currently valid.  The resulting
    * {@link ValidTxnList} object can be passed as string to the processing
@@ -171,6 +185,18 @@ public interface HiveTxnManager {
    * @throws LockException
    */
   ValidTxnList getValidTxns() throws LockException;
+
+ /**
+  * Get the transactions that are currently valid.  The resulting
+  * {@link ValidTxnList} object can be passed as string to the processing
+  * tasks for use in the reading the data.  This call should be made once up
+  * front by the planner and should never be called on the backend,
+  * as this will violate the isolation level semantics.
+  * @return list of valid transactions.
+  * @param  excludeTxnTypes list of transaction types that should be excluded.
+  * @throws LockException
+  */
+  ValidTxnList getValidTxns(List<TxnType> excludeTxnTypes) throws LockException;
 
   /**
    * Get the table write Ids that are valid for the current transaction.  The resulting
